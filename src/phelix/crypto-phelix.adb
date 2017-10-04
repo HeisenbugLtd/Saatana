@@ -425,18 +425,26 @@ package body Crypto.Phelix is
       This.KS.X_1_Bump := Key_Size / 2 + 256 * (Mac_Size mod Max_MAC_Size);
 
       --  copy key to X[], in correct endianness
-      for I in This.KS.X_0'Range loop
-         declare
-            Subkey_First : constant Stream_Offset := Key'First + Stream_Offset (I) * 4;
-            Subkey_Last  : constant Stream_Offset := Stream_Offset'Min (Subkey_First + 3, Key'Last);
-         begin
-            This.KS.X_0 (I) := BSWAP (Key (Subkey_First .. Subkey_Last));
-            pragma Loop_Invariant (for all S in This.KS.X_0'First .. I =>
-                                     This.KS.X_0 (S) =
-                                     BSWAP (Key (Key'First + Stream_Offset (S) * 4 ..
-                                                   Stream_Offset'Min (Key'First + Stream_Offset (S) * 4 + 3, Key'Last))));
-         end;
-      end loop;
+      --  Special case for zero length key, then we just set everything to 0.
+      if Key'Length = 0 then
+         This.KS.X_0 := (others => 0);
+      else
+         for I in This.KS.X_0'Range loop
+            declare
+               Subkey_First : constant Stream_Offset :=
+                                Stream_Offset'Min (Key'First + Stream_Offset (I - This.KS.X_0'First) * 4, Key'Last + 1);
+               Subkey_Last  : constant Stream_Offset :=
+                                Stream_Offset'Min (Subkey_First + 3, Key'Last);
+            begin
+               This.KS.X_0 (I) := BSWAP (Key (Subkey_First .. Subkey_Last));
+               pragma Loop_Invariant (for all S in This.KS.X_0'First .. I =>
+                                        This.KS.X_0 (S) =
+                                        BSWAP (Key (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 ..
+                                            Stream_Offset'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
+                                                               Key'Last))));
+            end;
+         end loop;
+      end if;
 
       --  Now process the padded "raw" key, using a Feistel network
       for I in Mod_8'Range loop

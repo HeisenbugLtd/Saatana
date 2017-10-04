@@ -97,9 +97,7 @@ is
                  Nonce'Length = Max_Nonce_Size / 8                                and then
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)              and then
                  Ctx_AAD_Len (This) = 0                                           and then
-                 Ctx_Msg_Len (This) = 0),
-     Post    => (Ctx_AAD_Len (This) = Header'Length                                       and then
-                 Ctx_Msg_Len (This) = Interfaces.Unsigned_32 (Payload'Length mod 2 ** 32));
+                 Ctx_Msg_Len (This) = 0);
 
    --
    --  Decrypt_Packet
@@ -126,9 +124,7 @@ is
                  Nonce'Length = Max_Nonce_Size / 8                                and then
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)              and then
                  Ctx_AAD_Len (This) = 0                                           and then
-                 Ctx_Msg_Len (This) = 0),
-     Post    => (Ctx_AAD_Len (This) = Header'Length                                       and then
-                 Ctx_Msg_Len (This) = Interfaces.Unsigned_32 (Payload'Length mod 2 ** 32));
+                 Ctx_Msg_Len (This) = 0);
 
    --
    --  Setup_Key

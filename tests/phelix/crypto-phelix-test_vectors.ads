@@ -2070,7 +2070,7 @@ is
                 Aad       => +"D434E2D1E419",
                 Plaintext => +"",
                 Cipher    => +"",
-                MAC       => +"1FCD00E69D850635")
+                MAC       => +"1FCD00E69D850635"),
         --  /* ---------- KAT vector #148 ------------- */
         --  { 128,   0,   6,  64, 128,  /* keySize, msgLen, aadLen, macSize, nonceSize */
         --  {3F78A3ACA524E1AA5D56346AA8F89029}, /* key */
@@ -2079,6 +2079,61 @@ is
         --  {}, /* pText */
         --  {}, /* cText */
         --  {1FCD00E69D850635}  /* mac */
-       );
+
+        --
+        --  Following are the test vectors from the orginal paper
+        --
+        --  "Phelix - Fast Encryption and Authentication in a Single Cryptographic Primitive"
+        --
+        149 => (Key       => +"",
+                Nonce     => +"00000000000000000000000000000000",
+                Aad       => +"",
+                Plaintext => +"00000000000000000000",
+                Cipher    => +"D52D45C605FD7A67748D",
+                MAC       => +"EF7BFE7AEBDC1A8B43362F2893800DBC"),
+        --  Initial Key: <empty string>
+        --  Nonce: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+        --  AAD: <empty string>
+        --  Plaintext: 00 00 00 00 00 00 00 00 00 00
+        --  Ciphertext: D5 2D 45 C6 05 FD 7A 67 74 8D
+        --  MAC: EF 7B FE 7A EB DC 1A 8B 43 36 2F 28 93 80 0D BC
+        150 => (Key       => +"0000000001000000020000000300000004000000050000000600000007000000",
+                Nonce     => +"00000001010000010200000103000001",
+                Aad       => +"",
+                Plaintext => +"000102030102030402030405030405060405060705060708060708090708090A",
+                Cipher    => +"B5FC4BF5BC640A56003D596D334BA594A5487B4E308EDB05A7D62F234514024A",
+                MAC       => +"DB0C22C466BDCDE4E32903F79AE542D1"),
+        --  Initial Key: 00 00 00 00 01 00 00 00 02 00 00 00 03 00 00 00 04 00 00 00 05 00 00 00 06 00 00 00 07 00 00 00
+        --  Nonce: 00 00 00 01 01 00 00 01 02 00 00 01 03 00 00 01
+        --  AAD: <empty string>
+        --  Plaintext: 00 01 02 03 01 02 03 04 02 03 04 05 03 04 05 06 04 05 06 07 05 06 07 08 06 07 08 09 07 08 09 0A
+        --  Ciphertext: B5 FC 4B F5 BC 64 0A 56 00 3D 59 6D 33 4B A5 94 A5 48 7B 4E 30 8E DB 05 A7 D6 2F 23 45 14 02 4A
+        --  MAC: DB 0C 22 C4 66 BD CD E4 E3 29 03 F7 9A E5 42 D1
+        151 => (Key       => +"01020304050607080807060504030201",
+                Nonce     => +"04000000050000000600000007000000",
+                Aad       => +"",
+                Plaintext => +"",
+                Cipher    => +"",
+                MAC       => +"BEAFD3BD00BE4417"),
+        --  Initial Key: 01 02 03 04 05 06 07 08 08 07 06 05 04 03 02 01
+        --  Nonce: 04 00 00 00 05 00 00 00 06 00 00 00 07 00 00 00
+        --  AAD: <empty string>
+        --  Plaintext: <empty string>
+        --  Ciphertext: <empty string>
+        --  MAC: BE AF D3 BD 00 BE 44 17
+
+        152 => (Key       => +"0907050301",
+                Nonce     => +"08070605040302010001020304050607",
+                Aad       => +"000204060103050708",
+                Plaintext => +"000102030102030402030405FF",
+                Cipher    => +"F10D3E067A32B1BEDAA5898BDE",
+                MAC       => +"60A231C1C9F5E4EF40AA0A1C")
+        --  Initial Key: 09 07 05 03 01
+        --  Nonce: 08 07 06 05 04 03 02 01 00 01 02 03 04 05 06 07
+        --  AAD: 00 02 04 06 01 03 05 07 08
+        --  Plaintext: 00 01 02 03 01 02 03 04 02 03 04 05 FF
+        --  Ciphertext: F1 0D 3E 06 7A 32 B1 BE DA A5 89 8B DE
+        --  MAC: 60 A2 31 C1 C9 F5 E4 EF 40 AA 0A 1C
+);
 
 end Crypto.Phelix.Test_Vectors;

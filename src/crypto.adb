@@ -12,7 +12,7 @@ package body Crypto is
       if Result'Length > 0 then
          Result (Result'First) := Result (Result'First) + Right;
 
-         if Result (Result'First) < Right then
+         if Result (Result'First) < Right and then Result'Length > 1 then
             --  If there was an overflow, we successively need to add 1 to the Nonce.
             declare
                Idx : Stream_Index := Result'First + 1;
@@ -22,6 +22,7 @@ package body Crypto is
                   exit Add_Carry when Result (Idx) /= 0 or Idx = Result'Last;
 
                   Idx := Idx + 1;
+                  pragma Loop_Invariant (Idx in Result'Range);
                end loop Add_Carry;
             end;
          end if;
