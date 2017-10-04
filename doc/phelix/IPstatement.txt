@@ -1,0 +1,6 @@
+D. Intellectual Property Statement
+
+Phelix is a public domain algorithm. There are no fees or royalties
+required for its use. The authors are not aware of any patent or pending
+patent by any party that would cover the use of Phelix.
+

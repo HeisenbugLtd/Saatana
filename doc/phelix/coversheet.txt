@@ -1,0 +1,43 @@
+A.  Cover sheet for Phelix Submission to ECRYPT
+
+
+1.  Name of submitted algorithm:    Phelix
+
+
+2.  Type of submitted algorithm:    Synchronous stream cipher 
+                                    with authentication
+
+    Proposed security level:        128-bit. Key length:  up to 256 bits. 
+
+    Proposed environment:           Any.
+
+
+3.  Principle Submitter:            Douglas Whiting
+    Telephone:                      +1-760-827-4502
+    Fax:                            +1-760-930-9115
+    Organization:                   Hifn, Inc.
+    Postal Address:                 5973 Avenida Encinas, Suite 110, 
+                                    Carlsbad, California 92009  USA
+    E-mail Address:                 dwhiting@hifn.com 
+
+
+4.  Name of auxiliary submitter:    Bruce Schneier
+
+
+5.  Name of algorithm inventors:    Douglas Whiting, Bruce Schneier, 
+                                    John Kelsey, Stefan Lucks, Tadayoshi Kohno
+
+
+6.  Name of owner of the algorithm: Public domain
+
+
+7.  Signature of submitter:         _________________________________________
+
+
+8.  Backup point of contact:        Bruce Schneier,
+    Telephone:                      +1-650-404-2400
+    Fax:                            +1-650-903-0461
+    Organization:                   Counterpane Internet Security
+    Postal Address:                 1090A La Avenida
+                                    Mountain View, CA 94043    USA
+    E-mail Address:                 schneier@counterpane.com
