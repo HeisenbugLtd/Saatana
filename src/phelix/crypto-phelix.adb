@@ -19,42 +19,59 @@
 package body Crypto.Phelix is
 
    --
-   --  BSWAP
+   --  To_Unsigned
    --
-   function BSWAP (Value : in General_Stream) return Interfaces.Unsigned_32 is
+   --  Converts the maximum four first values of the given Stream to its
+   --  Unsigned_32 value, assuming Low_Order_First byte order (little endian).
+   --
+   function To_Unsigned (Value : in General_Stream) return Interfaces.Unsigned_32 is
      ((if Value'Length > 0 then Interfaces.Unsigned_32 (Value (Value'First + 0)) * 2 **  0 else 0) +
       (if Value'Length > 1 then Interfaces.Unsigned_32 (Value (Value'First + 1)) * 2 **  8 else 0) +
       (if Value'Length > 2 then Interfaces.Unsigned_32 (Value (Value'First + 2)) * 2 ** 16 else 0) +
       (if Value'Length > 3 then Interfaces.Unsigned_32 (Value (Value'First + 3)) * 2 ** 24 else 0)) with
-   Depends => (BSWAP'Result => (Value));
-
-   function BSWAP (Value : in Ciphertext_Stream) return Interfaces.Unsigned_32 is
-     (BSWAP (General_Stream (Value))) with
-   Depends => (BSWAP'Result => (Value));
-
-   function BSWAP (Value : in Key_Stream) return Interfaces.Unsigned_32 is
-     (BSWAP (General_Stream (Value))) with
-   Depends => (BSWAP'Result => (Value));
-
-   function BSWAP (Value : in Nonce_Stream) return Interfaces.Unsigned_32 is
-     (BSWAP (General_Stream (Value))) with
-   Depends => (BSWAP'Result => (Value));
-
-   function BSWAP (Value : in Plaintext_Stream) return Interfaces.Unsigned_32 is
-     (BSWAP (General_Stream (Value))) with
-   Depends => (BSWAP'Result => (Value));
+   Depends => (To_Unsigned'Result => (Value));
 
    --
-   --  BSWAP
+   --  To_Unsigned
    --
-   function BSWAP (Value  : in Interfaces.Unsigned_32;
-                   Length : in Stream_Count) return General_Stream is
+   function To_Unsigned (Value : in Ciphertext_Stream) return Interfaces.Unsigned_32 is
+     (To_Unsigned (General_Stream (Value))) with
+   Depends => (To_Unsigned'Result => (Value));
+
+   --
+   --  To_Unsigned
+   --
+   function To_Unsigned (Value : in Key_Stream) return Interfaces.Unsigned_32 is
+     (To_Unsigned (General_Stream (Value))) with
+   Depends => (To_Unsigned'Result => (Value));
+
+   --
+   --  To_Unsigned
+   --
+   function To_Unsigned (Value : in Nonce_Stream) return Interfaces.Unsigned_32 is
+     (To_Unsigned (General_Stream (Value))) with
+   Depends => (To_Unsigned'Result => (Value));
+
+   --
+   --  To_Unsigned
+   --
+   function To_Unsigned (Value : in Plaintext_Stream) return Interfaces.Unsigned_32 is
+     (To_Unsigned (General_Stream (Value))) with
+   Depends => (To_Unsigned'Result => (Value));
+
+   --
+   --  To_Stream
+   --
+   --  Converts the given Unsigned_32 value to a stream in Low_Order_First
+   --  byte order (little endian).
+   --
+   function To_Stream (Value : in Interfaces.Unsigned_32) return General_Stream is
      (General_Stream'
-       (0 => (if Length > 0 then Byte (Interfaces.Shift_Right (Value,  0) mod 256) else 0),
-        1 => (if Length > 1 then Byte (Interfaces.Shift_Right (Value,  8) mod 256) else 0),
-        2 => (if Length > 2 then Byte (Interfaces.Shift_Right (Value, 16) mod 256) else 0),
-        3 => (if Length > 3 then Byte (Interfaces.Shift_Right (Value, 24) mod 256) else 0))) with
-   Post => (BSWAP'Result'Length = 4 and BSWAP'Result'First = 0);
+       (0 => Byte (Interfaces.Shift_Right (Value,  0) mod 256),
+        1 => Byte (Interfaces.Shift_Right (Value,  8) mod 256),
+        2 => Byte (Interfaces.Shift_Right (Value, 16) mod 256),
+        3 => Byte (Interfaces.Shift_Right (Value, 24) mod 256))) with
+   Post => (To_Stream'Result'Length = 4 and To_Stream'Result'First = 0);
 
    --  Phelix algorithm internal constants
    OLD_Z_REG    : constant := 4;                  --  which var used for "old" state
@@ -67,6 +84,12 @@ package body Crypto.Phelix is
 
    --
    --  H
+   --
+   --  This is Phelix' mixing function.
+   --
+   --  Document and reference implementation split this function into H0 and
+   --  H1, but as they are always called in sequence, this implementation
+   --  merges them into a single function.
    --
    procedure H (Z              : in out State_Words;
                 Plaintext_Word : in     Interfaces.Unsigned_32;
@@ -115,18 +138,17 @@ package body Crypto.Phelix is
             --  If there was a partial word, the resulting Plain_Text needs to be masked as it is used
             --  in the further derivation of new Z values. Contrary to the C reference implementation
             --  which reads undefined bytes at the end of the stream, here the same result is achieved
-            --  by masking the Key_Stream value, because BSWAP already returns zero for the bytes.
+            --  by masking the Key_Stream value, because To_Unsigned already returns zero for the bytes.
             Plain_Text :=
-              BSWAP (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1)) xor (The_Key and MASK (Remaining_Bytes));
+              To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1)) xor (The_Key and MASK (Remaining_Bytes));
 
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
-              Plaintext_Stream (BSWAP (Value  => Plain_Text,
-                                       Length => Remaining_Bytes)) (0 .. Remaining_Bytes - 1);
+              Plaintext_Stream (To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
             pragma Assert (for all X in Dst_Idx .. Dst_Nxt - 1 => Destination (X) in Byte);
             pragma Annotate (GNATprove,
                              False_Positive,
                              """Destination"" might not be initialized",
-                             "This is bonkers, there's an explicit assignment above");
+                             """Destination"" is initialized, there's an explicit assignment above");
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -175,7 +197,8 @@ package body Crypto.Phelix is
       --  SPARK still can't prove that the precondition won't fail.
       pragma Assert (Payload'First in Stream_Index and Packet'First in Stream_Index);
       pragma Assert (Msg_Body'Length = Payload'Length);
-      pragma Assert (This.CS.Msg_Len mod 4 = 0);
+      pragma Assert (Setup_Nonce_Called (Local_Ctx));
+      pragma Assert (Local_Ctx.CS.Msg_Len mod 4 = 0);
       Decrypt_Bytes (This        => Local_Ctx,
                      Source      => Payload,
                      Destination => Msg_Body);
@@ -218,16 +241,15 @@ package body Crypto.Phelix is
                Plaintext_Word => 0,
                Key_Word       => This.KS.X_0 (J));
             The_Key     := This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
-            Plain_Text  := BSWAP (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1));
+            Plain_Text  := To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1));
             Cipher_Text := The_Key xor Plain_Text;
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
-              Ciphertext_Stream (BSWAP (Value  => Cipher_Text,
-                                        Length => Remaining_Bytes)) (0 .. Remaining_Bytes - 1);
+              Ciphertext_Stream (To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
             pragma Assert (for all X in Dst_Idx .. Dst_Nxt - 1 => Destination (X) in Byte);
             pragma Annotate (GNATprove,
                              False_Positive,
                              """Destination"" might not be initialized",
-                             "This is bonkers, there's an explicit assignment above");
+                             """Destination""is initialized, there's an explicit assignment above");
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -274,7 +296,8 @@ package body Crypto.Phelix is
       --  SPARK still can't prove that the precondition won't fail.
       pragma Assert (Payload'First in Stream_Index and Packet'First in Stream_Index);
       pragma Assert (Msg_Body'Length = Payload'Length);
-      pragma Assert (This.CS.Msg_Len mod 4 = 0);
+      pragma Assert (Setup_Nonce_Called (Local_Ctx));
+      pragma Assert (Local_Ctx.CS.Msg_Len mod 4 = 0);
       Encrypt_Bytes (This        => Local_Ctx,
                      Source      => Payload,
                      Destination => Msg_Body);
@@ -317,13 +340,12 @@ package body Crypto.Phelix is
             begin
                Mac_Index := Tmp'First + Stream_Offset (K) * 4;
                Tmp (Mac_Index .. Mac_Index + 3) :=
-                 MAC_Stream (BSWAP (Value  => The_Key xor Plain_Text,
-                                    Length => 4));
+                 MAC_Stream (To_Stream (The_Key xor Plain_Text));
                pragma Assert (for all X in Mac_Index .. Mac_Index + 3 => Tmp (X) in Byte);
                pragma Annotate (GNATprove,
                                 False_Positive,
                                 """Tmp"" might not be initialized",
-                                "This is bonkers, there's an explicit assignment above");
+                                """Tmp"" is Initialized, there's an explicit assignment above");
             end;
 
             H (Z              => CS.Z,
@@ -408,7 +430,7 @@ package body Crypto.Phelix is
                Key_Word       => This.KS.X_0 (J));
 
             H (Z              => This.CS.Z,
-               Plaintext_Word => BSWAP (Aad (Src_Idx .. Src_Idx + Remaining_Bytes - 1)),
+               Plaintext_Word => To_Unsigned (Aad (Src_Idx .. Src_Idx + Remaining_Bytes - 1)),
                Key_Word       => This.KS.X_1 (J) + This.CS.I);
 
             This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); --  Save the "old" value
@@ -454,12 +476,13 @@ package body Crypto.Phelix is
                Subkey_Last  : constant Stream_Offset :=
                                 Stream_Offset'Min (Subkey_First + 3, Key'Last);
             begin
-               This.KS.X_0 (I) := BSWAP (Key (Subkey_First .. Subkey_Last));
-               pragma Loop_Invariant (for all S in This.KS.X_0'First .. I =>
-                                        This.KS.X_0 (S) =
-                                        BSWAP (Key (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 ..
-                                            Stream_Offset'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
-                                                               Key'Last))));
+               This.KS.X_0 (I) := To_Unsigned (Key (Subkey_First .. Subkey_Last));
+               pragma Loop_Invariant
+                 (for all S in This.KS.X_0'First .. I =>
+                    This.KS.X_0 (S) =
+                      To_Unsigned (Key (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 ..
+                                   Stream_Offset'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
+                                                      Key'Last))));
             end;
          end loop;
       end if;
@@ -505,7 +528,7 @@ package body Crypto.Phelix is
       for I in Mod_8 range 0 .. 3 loop
          declare
             N : constant Interfaces.Unsigned_32 :=
-                  BSWAP (Nonce (Nonce'First + Stream_Offset (I) * 4 .. Nonce'First + Stream_Offset (I) * 4 + 3));
+                  To_Unsigned (Nonce (Nonce'First + Stream_Offset (I) * 4 .. Nonce'First + Stream_Offset (I) * 4 + 3));
          begin
             This.KS.X_1 (I)     := This.KS.X_0 (I + 4) + N;
             This.KS.X_1 (I + 4) := This.KS.X_0 (I)     + (Interfaces.Unsigned_32 (I) - N);

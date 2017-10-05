@@ -80,6 +80,9 @@ is
    function Ctx_AAD_Len (Ctx : Context) return Stream_Count with
      Ghost => True;
 
+   function Ctx_AAD_Xor (Ctx : Context) return Interfaces.Unsigned_32 with
+     Ghost;
+
    function Ctx_I (Ctx : Context) return Interfaces.Unsigned_32 with
      Ghost => True;
 
@@ -92,8 +95,22 @@ is
    function Ctx_Msg_Len (Ctx : Context) return Interfaces.Unsigned_32 with
      Ghost => True;
 
+   --  As the order in which calls are made are important, we define some proof
+   --  functions to be used as precondition.
+   function Setup_Key_Called (Ctx : Context) return Boolean with
+     Pre   => True,
+     Ghost => True;
+
+   function Setup_Nonce_Called (Ctx : Context) return Boolean with
+     Pre   => Setup_Key_Called (Ctx),
+     Ghost => True;
+
    --
    --  Encrypt_Packet
+   --
+   --  Using the cipher context This, this subprogram encrypts Payload and
+   --  stores the Header followed by the encrypted Payload into Packet, and
+   --  the message authentication code into MAC.
    --
    procedure Encrypt_Packet (This    : in     Context;
                              Nonce   : in     Nonce_Stream;
@@ -113,14 +130,20 @@ is
                             Payload)),
      Pre     => (Header'First in Stream_Index                                     and then -- FIXME
                  (Payload'First in Stream_Index and Packet'First in Stream_Index) and then -- FIXME: implicit, needed for proof
+                 Setup_Key_Called (This)                                          and then
                  Header'Length + Payload'Length = Packet'Length                   and then
                  Nonce'Length = Max_Nonce_Size / 8                                and then
-                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)              and then
-                 Ctx_AAD_Len (This) = 0                                           and then
-                 Ctx_Msg_Len (This) = 0);
+                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8));
 
    --
    --  Decrypt_Packet
+   --
+   --  Using the cipher context This, this subprogram decrypts Payload and
+   --  stores the Header followed by the decrypted Payload into Packet, and
+   --  the message authentication code into MAC.
+   --
+   --  The resulting Packet must only be processed if the returned MAC matches
+   --  the expected one.
    --
    procedure Decrypt_Packet (This    : in     Context;
                              Nonce   : in     Nonce_Stream;
@@ -140,14 +163,15 @@ is
                             Payload)),
      Pre     => (Header'First in Stream_Index                                     and then -- FIXME
                  (Payload'First in Stream_Index and Packet'First in Stream_Index) and then -- FIXME: implicit, needed for proof
+                 Setup_Key_Called (This)                                          and then
                  Header'Length + Payload'Length = Packet'Length                   and then
                  Nonce'Length = Max_Nonce_Size / 8                                and then
-                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)              and then
-                 Ctx_AAD_Len (This) = 0                                           and then
-                 Ctx_Msg_Len (This) = 0);
+                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8));
 
    --
    --  Setup_Key
+   --
+   --  Initializes the key schedule of the cipher context This.
    --
    procedure Setup_Key (This     : in out Context;
                         Key      : in     Key_Stream;
@@ -155,42 +179,65 @@ is
      Depends => (This => (This,
                           Key,
                           Mac_Size)),
-     Pre     => (Key'Length <= Max_Key_Size / 8 and -- Support key sizes between 0 and 256 bits
-                 Mac_Size in MAC_Size_32), --  We only support "sane" MAC sizes
+     Pre     => (Key'Length <= Max_Key_Size / 8), -- Support key sizes between 0 and 256 bits
      Post    => (Ctx_Key_Size (This) = Key'Length * 8 and
                  Ctx_Mac_Size (This) = Mac_Size);
 
    --
    --  Setup_Nonce
    --
+   --  Updates the internal cipher state with the given Nonce.
+   --
+   --  Setup_Nonce can be called several times to setup a new cipher context.
+   --
    procedure Setup_Nonce (This  : in out Context;
                           Nonce : in     Nonce_Stream) with
      Depends => (This => (This,
                           Nonce)),
-     Pre     => (Nonce'Length = Max_Nonce_Size / 8),
+     Pre     => (Setup_Key_Called (This) and
+                 Nonce'Length = Max_Nonce_Size / 8),
      Post    => (Ctx_I (This) = 8                              and
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old) and
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old) and
                  Ctx_AAD_Len (This) = 0                        and
+                 Ctx_AAD_Xor (This) /= 0                       and
                  Ctx_Msg_Len (This) = 0);
 
    --
    --  Process_AAD
    --
+   --  Updates the internal cipher state for a proper calculation of the
+   --  message authentication code for a subsequent decryption or encryption.
+   --
+   --  Process_AAD can be called several times in succession for different
+   --  parts of the plain text stream.
+   --
    procedure Process_AAD (This    : in out Context;
                           Aad     : in     Plaintext_Stream) with
      Depends => (This => (This,
                           Aad)),
-     Pre     => (Aad'First in Stream_Index and then -- FIXME: Precondition is implicit, but without that the proof fails.
+     Pre     => (Aad'First in Stream_Index    and then -- FIXME: Precondition is implicit, but without that the proof fails.
+                 Setup_Nonce_Called (This)    and then
+                 Ctx_Msg_Len (This) = 0       and then --  AAD processing must be done first
                  Ctx_AAD_Len (This) mod 4 = 0 and then --  can only make ONE sub-word call!
                  Ctx_AAD_Len (This) < Stream_Count'Last - Aad'Length),
      Post    => (Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old) + Aad'Length and then
-                 Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old)              and then
+                 Ctx_AAD_Xor (This) = Ctx_AAD_Xor (This'Old)              and then
+                 Ctx_Msg_Len (This) = 0                                   and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)            and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
 
    --
    --  Encrypt_Bytes
+   --
+   --  Using the cipher context This, this subprogram encrypts the Source into
+   --  Destination.
+   --
+   --  Before using this function, Setup_Key and Setup_Nonce must be called to
+   --  ensure proper initialization of the context.
+   --
+   --  Encrypt_Bytes can be called several times in succession for different
+   --  parts of the plaintext.
    --
    procedure Encrypt_Bytes (This        : in out Context;
                             Source      : in     Plaintext_Stream;
@@ -200,17 +247,28 @@ is
                  Destination => (This,
                                  Destination,
                                  Source)),
-     Pre     => ((Source'First in Stream_Index and Destination'First in Stream_Index) and
+     Pre     => ((Source'First in Stream_Index and Destination'First in Stream_Index) and then
                  --  implicit, but needed for proof
-                 Source'Length = Destination'Length and
+                 Source'Length = Destination'Length                                   and then
+                 Setup_Nonce_Called (This)                                            and then
                  Ctx_Msg_Len (This) mod 4 = 0), --  Can only make ONE sub-word call!
      Post    => (Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                 and then
+                 Ctx_AAD_Xor (This) = 0                                      and then
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)               and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
 
    --
    --  Decrypt_Bytes
+   --
+   --  Using the cipher context This, this subprogram decrypts the Source into
+   --  Destination.
+   --
+   --  Before using this function, Setup_Key and Setup_Nonce must be called to
+   --  ensure proper initialization of the context.
+   --
+   --  Decrypt_Bytes can be called several times in succession for different
+   --  parts of the cipher text.
    --
    procedure Decrypt_Bytes (This        : in out Context;
                             Source      : in     Ciphertext_Stream;
@@ -220,11 +278,13 @@ is
                  Destination => (Destination,
                                  This,
                                  Source)),
-     Pre     => (((Source'First in Stream_Index and Destination'First in Stream_Index) and
-                  --  FIXME: implicit, but needed for proof
-                  Source'Length = Destination'Length) and then
+     Pre     => ((Source'First in Stream_Index and Destination'First in Stream_Index) and then
+                 --  FIXME: implicit, but needed for proof
+                 Source'Length = Destination'Length and then
+                 Setup_Nonce_Called (This)          and then
                  Ctx_Msg_Len (This) mod 4 = 0),
      Post    => (Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                                      and then
+                 Ctx_AAD_Xor (This) = 0                                                                           and then
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                                    and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
@@ -232,11 +292,14 @@ is
    --
    --  Finalize
    --
+   --  Calculates the message authentication code after a decryption or
+   --  encryption and stores it in Mac.
+   --
    procedure Finalize (This : in     Context;
                        Mac  :    out MAC_Stream) with
      Depends => (Mac  => (Mac, -- This isn't exactly True, but SPARK insists, probably because we rely on Mac'Length
                           This)),
-     Pre     => (Ctx_Mac_Size (This) <= Max_MAC_Size and
+     Pre     => ((Setup_Nonce_Called (This) or else Ctx_AAD_Xor (This) = 0) and then
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8));
 
 private
@@ -255,9 +318,9 @@ private
 
    type Key_Schedule is
       record
-         Key_Size : Key_Size_32;             --  Initial Key Size, in Bits : 64 .. 256
-         MAC_Size : MAC_Size_32;             --  Mac Tag     Size, in Bits : 64 .. 128
-         X_1_Bump : Interfaces.Unsigned_32;  --  4 * (keySize / 8) + 256 * (macSize mod 128)
+         Key_Size : Key_Size_32;             --  initial key size, in bits
+         MAC_Size : MAC_Size_32;             --  MAC tag size, in bits
+         X_1_Bump : Interfaces.Unsigned_32;  --  4 * (keySize / 8) + 256 * (MAC_Size mod 128)
          X_0      : Key_Processing;
          X_1      : Key_Processing;          --  processed working key material
       end record;
@@ -266,9 +329,9 @@ private
       record
          Old_Z   : Old_Z_4;                --  Previous four Z_4 values for output
          Z       : State_Words;            --  5 internal state words (160 bits)
-         AAD_Len : Stream_Count;           --  64-bit aadLen counter (LSW first)
-         I       : Interfaces.Unsigned_32; --  Block number (modulo 2 ** 32!)
-         Msg_Len : Interfaces.Unsigned_32; --  low 32 bits of msgLen
+         AAD_Len : Stream_Count;           --  AAD length
+         I       : Interfaces.Unsigned_32; --  block number (modulo 2 ** 32)
+         Msg_Len : Interfaces.Unsigned_32; --  message length  (modulo 2 ** 32)
          AAD_Xor : Interfaces.Unsigned_32; --  aadXor constant
       end record;
 
@@ -283,6 +346,9 @@ private
    function Ctx_AAD_Len (Ctx : Context) return Stream_Count is
      (Ctx.CS.AAD_Len);
 
+   function Ctx_AAD_Xor (Ctx : Context) return Interfaces.Unsigned_32 is
+     (Ctx.CS.AAD_Xor);
+
    function Ctx_I (Ctx : Context) return Interfaces.Unsigned_32 is
      (Ctx.CS.I);
 
@@ -294,5 +360,12 @@ private
 
    function Ctx_Msg_Len (Ctx : Context) return Interfaces.Unsigned_32 is
      (Ctx.CS.Msg_Len);
+
+   function Setup_Key_Called (Ctx : Context) return Boolean is
+     (Ctx.KS.Key_Size in Key_Size_32 and
+      Ctx.KS.MAC_Size in MAC_Size_32);
+
+   function Setup_Nonce_Called (Ctx : Context) return Boolean is
+     (Ctx.CS.AAD_Xor /= 0);
 
 end Crypto.Phelix;
