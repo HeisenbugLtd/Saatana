@@ -21,7 +21,8 @@ package body Crypto.Phelix is
    --
    --  Exclusive_Or
    --
-   --  Returns Left xor Right for each element of the given operands.
+   --  Does an in place "xor" per element for the given argument with each
+   --  element of "Xor_With".
    --
    procedure Exclusive_Or (Argument : in out Old_Z_4;
                            Xor_With : in     Old_Z_4) with
