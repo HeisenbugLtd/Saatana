@@ -176,7 +176,7 @@ package body Crypto.Phelix is
    --
    --  Decrypt_Packet
    --
-   procedure Decrypt_Packet (This    : in     Context;
+   procedure Decrypt_Packet (This    : in out Context;
                              Nonce   : in     Nonce_Stream;
                              Header  : in     Plaintext_Stream;
                              Payload : in     Ciphertext_Stream;
@@ -185,11 +185,10 @@ package body Crypto.Phelix is
    is
       Msg_Header : Plaintext_Stream renames Packet (Packet'First .. Packet'First + Header'Length - 1);
       Msg_Body   : Plaintext_Stream renames Packet (Packet'First + Header'Length .. Packet'Last);
-      Local_Ctx  : Context := This;
    begin
-      Setup_Nonce (This  => Local_Ctx,
+      Setup_Nonce (This  => This,
                    Nonce => Nonce);
-      Process_AAD (This => Local_Ctx,
+      Process_AAD (This => This,
                    Aad  => Header);
       Msg_Header := Header;
 
@@ -197,13 +196,13 @@ package body Crypto.Phelix is
       --  SPARK still can't prove that the precondition won't fail.
       pragma Assert (Payload'First in Stream_Index and Packet'First in Stream_Index);
       pragma Assert (Msg_Body'Length = Payload'Length);
-      pragma Assert (Setup_Nonce_Called (Local_Ctx));
-      pragma Assert (Local_Ctx.CS.Msg_Len mod 4 = 0);
-      Decrypt_Bytes (This        => Local_Ctx,
+      pragma Assert (Setup_Nonce_Called (This));
+      pragma Assert (This.CS.Msg_Len mod 4 = 0);
+      Decrypt_Bytes (This        => This,
                      Source      => Payload,
                      Destination => Msg_Body);
 
-      Finalize (This => Local_Ctx,
+      Finalize (This => This,
                 Mac  => Mac);
    end Decrypt_Packet;
 
@@ -276,7 +275,7 @@ package body Crypto.Phelix is
    --
    --  Encrypt_Packet
    --
-   procedure Encrypt_Packet (This    : in     Context;
+   procedure Encrypt_Packet (This    : in out Context;
                              Nonce   : in     Nonce_Stream;
                              Header  : in     Plaintext_Stream;
                              Payload : in     Plaintext_Stream;
@@ -284,11 +283,10 @@ package body Crypto.Phelix is
                              Mac     :    out MAC_Stream) is
       Msg_Header : Ciphertext_Stream renames Packet (Packet'First .. Packet'First + Header'Length - 1);
       Msg_Body   : Ciphertext_Stream renames Packet (Packet'First + Header'Length .. Packet'Last);
-      Local_Ctx  : Context := This;
    begin
-      Setup_Nonce (This  => Local_Ctx,
+      Setup_Nonce (This  => This,
                    Nonce => Nonce);
-      Process_AAD (This => Local_Ctx,
+      Process_AAD (This => This,
                    Aad  => Header);
       Msg_Header := Ciphertext_Stream (Header);
 
@@ -296,19 +294,19 @@ package body Crypto.Phelix is
       --  SPARK still can't prove that the precondition won't fail.
       pragma Assert (Payload'First in Stream_Index and Packet'First in Stream_Index);
       pragma Assert (Msg_Body'Length = Payload'Length);
-      pragma Assert (Setup_Nonce_Called (Local_Ctx));
-      pragma Assert (Local_Ctx.CS.Msg_Len mod 4 = 0);
-      Encrypt_Bytes (This        => Local_Ctx,
+      pragma Assert (Setup_Nonce_Called (This));
+      pragma Assert (This.CS.Msg_Len mod 4 = 0);
+      Encrypt_Bytes (This        => This,
                      Source      => Payload,
                      Destination => Msg_Body);
-      Finalize (This => Local_Ctx,
+      Finalize (This => This,
                 Mac  => Mac);
    end Encrypt_Packet;
 
    --
    --  Finalize
    --
-   procedure Finalize (This : in     Context;
+   procedure Finalize (This : in out Context;
                        Mac  :    out MAC_Stream)
    is
       MAC_WORDS  : constant := MAC_INIT_CNT + MAC_WORD_CNT;
@@ -316,27 +314,24 @@ package body Crypto.Phelix is
       Mac_Index  : Stream_Offset;
       Tmp        : MAC_Stream (0 .. MAC_WORDS * 4 - 1);
       MAC_OFFSET : constant := Tmp'First + MAC_INIT_CNT * 4;
-      --  Finalization step, we do not further modify the context.
-      --  Still, we need to adjust some variables, so let's take a local copy.
-      CS         : Cipher_State := This.CS;
    begin
-      Plain_Text := CS.Msg_Len mod 4;
-      CS.Z (0) := CS.Z (0) xor MAC_Magic_XOR;
-      CS.Z (4) := CS.Z (4) xor Interfaces.Unsigned_32 (CS.AAD_Len mod 2 ** 32);
-      CS.Z (2) := CS.Z (2) xor Interfaces.Unsigned_32 (CS.AAD_Len / 2 ** 32);
-      CS.Z (1) := CS.Z (1) xor CS.AAD_Xor;         -- do this in case msgLen == 0
+      Plain_Text := This.CS.Msg_Len mod 4;
+      This.CS.Z (0) := This.CS.Z (0) xor MAC_Magic_XOR;
+      This.CS.Z (4) := This.CS.Z (4) xor Interfaces.Unsigned_32 (This.CS.AAD_Len mod 2 ** 32);
+      This.CS.Z (2) := This.CS.Z (2) xor Interfaces.Unsigned_32 (This.CS.AAD_Len / 2 ** 32);
+      This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor;         -- do this in case Msh_Len = 0
 
       for K in Interfaces.Unsigned_32 range 0 .. MAC_WORDS - 1 loop
          declare
-            J : constant Mod_8 := Mod_8 (CS.I mod 8);
+            J : constant Mod_8 := Mod_8 (This.CS.I mod 8);
          begin
-            H (Z              => CS.Z,
+            H (Z              => This.CS.Z,
                Plaintext_Word => 0,
                Key_Word       => This.KS.X_0 (J));
 
             declare
                The_Key : constant Interfaces.Unsigned_32 :=
-                           CS.Z (OLD_Z_REG) + CS.Old_Z (Old_State_Words (CS.I mod 4));
+                           This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
             begin
                Mac_Index := Tmp'First + Stream_Offset (K) * 4;
                Tmp (Mac_Index .. Mac_Index + 3) :=
@@ -348,16 +343,16 @@ package body Crypto.Phelix is
                                 """Tmp"" is Initialized, there's an explicit assignment above");
             end;
 
-            H (Z              => CS.Z,
+            H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
-               Key_Word       => This.KS.X_1 (J) + CS.I);
-            CS.Old_Z (Old_State_Words (CS.I mod 4)) := CS.Z (OLD_Z_REG); -- save the "old" value
-            CS.I := CS.I + 1;
+               Key_Word       => This.KS.X_1 (J) + This.CS.I);
+            This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); -- save the "old" value
+            This.CS.I := This.CS.I + 1;
          end;
 
          pragma Loop_Variant (Increases => K,
-                              Increases => CS.I);
-         pragma Loop_Invariant ((CS.I = CS.I'Loop_Entry + K + 1 and
+                              Increases => This.CS.I);
+         pragma Loop_Invariant ((This.CS.I = This.CS.I'Loop_Entry + K + 1 and
                                  Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
                                  Mac_Index + 3 in Tmp'Range) and then
                                 (for all X in Tmp'First .. Mac_Index + 3 => Tmp (X) in Byte));
@@ -365,6 +360,10 @@ package body Crypto.Phelix is
 
       --  Copy the relevant bits back to MAC.
       Mac := Tmp (MAC_OFFSET .. MAC_OFFSET - 1 + Mac'Length);
+
+      --  We finalized the stream, so the previous Nonce should never be reused.
+      --  Ensure at least part of this condition by marking the current Nonce as invalid.
+      This.Nonce_Set := False;
    end Finalize;
 
    --
@@ -516,6 +515,10 @@ package body Crypto.Phelix is
             end loop;
          end;
       end loop;
+
+      --  Key has been set up. Require a Nonce later.
+      This.Key_Set   := True;
+      This.Nonce_Set := False;
    end Setup_Key;
 
    --
@@ -559,6 +562,9 @@ package body Crypto.Phelix is
       This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor;
 
       This.CS.I := 8;
+
+      --  Nonce has been set.
+      This.Nonce_Set := True;
    end Setup_Nonce;
 
 end Crypto.Phelix;

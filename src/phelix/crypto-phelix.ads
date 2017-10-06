@@ -80,9 +80,6 @@ is
    function Ctx_AAD_Len (Ctx : Context) return Stream_Count with
      Ghost => True;
 
-   function Ctx_AAD_Xor (Ctx : Context) return Interfaces.Unsigned_32 with
-     Ghost;
-
    function Ctx_I (Ctx : Context) return Interfaces.Unsigned_32 with
      Ghost => True;
 
@@ -98,11 +95,9 @@ is
    --  As the order in which calls are made are important, we define some proof
    --  functions to be used as precondition.
    function Setup_Key_Called (Ctx : Context) return Boolean with
-     Pre   => True,
      Ghost => True;
 
    function Setup_Nonce_Called (Ctx : Context) return Boolean with
-     Pre   => Setup_Key_Called (Ctx),
      Ghost => True;
 
    --
@@ -112,13 +107,17 @@ is
    --  stores the Header followed by the encrypted Payload into Packet, and
    --  the message authentication code into MAC.
    --
-   procedure Encrypt_Packet (This    : in     Context;
+   procedure Encrypt_Packet (This    : in out Context;
                              Nonce   : in     Nonce_Stream;
                              Header  : in     Plaintext_Stream;
                              Payload : in     Plaintext_Stream;
                              Packet  :    out Ciphertext_Stream;
                              Mac     :    out MAC_Stream) with
-     Depends => (Packet => (Packet,
+     Depends => (This   => (This,
+                            Nonce,
+                            Header,
+                            Payload),
+                 Packet => (Packet,
                             This,
                             Nonce,
                             Header,
@@ -128,12 +127,15 @@ is
                             Nonce,
                             Header,
                             Payload)),
-     Pre     => (Header'First in Stream_Index                                     and then -- FIXME
-                 (Payload'First in Stream_Index and Packet'First in Stream_Index) and then -- FIXME: implicit, needed for proof
+     Pre     => (Header'First in Stream_Index                                     and then
+                 (Payload'First in Stream_Index and Packet'First in Stream_Index) and then
+                 --  FIXME: implicit, but apparently needed for proof
                  Setup_Key_Called (This)                                          and then
                  Header'Length + Payload'Length = Packet'Length                   and then
                  Nonce'Length = Max_Nonce_Size / 8                                and then
-                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8));
+                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
+                 not Setup_Nonce_Called (This));
 
    --
    --  Decrypt_Packet
@@ -145,13 +147,17 @@ is
    --  The resulting Packet must only be processed if the returned MAC matches
    --  the expected one.
    --
-   procedure Decrypt_Packet (This    : in     Context;
+   procedure Decrypt_Packet (This    : in out Context;
                              Nonce   : in     Nonce_Stream;
                              Header  : in     Plaintext_Stream;
                              Payload : in     Ciphertext_Stream;
                              Packet  :    out Plaintext_Stream;
                              Mac     :    out MAC_Stream) with
-     Depends => (Packet => (Packet, -- not really
+     Depends => (This   => (This,
+                            Nonce,
+                            Header,
+                            Payload),
+                 Packet => (Packet, -- not really
                             This,
                             Nonce,
                             Header,
@@ -161,12 +167,15 @@ is
                             Nonce,
                             Header,
                             Payload)),
-     Pre     => (Header'First in Stream_Index                                     and then -- FIXME
-                 (Payload'First in Stream_Index and Packet'First in Stream_Index) and then -- FIXME: implicit, needed for proof
+     Pre     => (Header'First in Stream_Index                                     and then
+                 (Payload'First in Stream_Index and Packet'First in Stream_Index) and then
+                 --  FIXME: implicit, but apparently needed for proof
                  Setup_Key_Called (This)                                          and then
                  Header'Length + Payload'Length = Packet'Length                   and then
                  Nonce'Length = Max_Nonce_Size / 8                                and then
-                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8));
+                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
+                 not Setup_Nonce_Called (This));
 
    --
    --  Setup_Key
@@ -180,7 +189,9 @@ is
                           Key,
                           Mac_Size)),
      Pre     => (Key'Length <= Max_Key_Size / 8), -- Support key sizes between 0 and 256 bits
-     Post    => (Ctx_Key_Size (This) = Key'Length * 8 and
+     Post    => (Setup_Key_Called (This)              and then
+                 not Setup_Nonce_Called (This)        and then
+                 Ctx_Key_Size (This) = Key'Length * 8 and then
                  Ctx_Mac_Size (This) = Mac_Size);
 
    --
@@ -196,11 +207,12 @@ is
                           Nonce)),
      Pre     => (Setup_Key_Called (This) and
                  Nonce'Length = Max_Nonce_Size / 8),
-     Post    => (Ctx_I (This) = 8                              and
-                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old) and
-                 Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old) and
-                 Ctx_AAD_Len (This) = 0                        and
-                 Ctx_AAD_Xor (This) /= 0                       and
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
+                 Setup_Nonce_Called (This)                             and then
+                 Ctx_I (This) = 8                                      and then
+                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)         and then
+                 Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old)         and then
+                 Ctx_AAD_Len (This) = 0                                and then
                  Ctx_Msg_Len (This) = 0);
 
    --
@@ -216,15 +228,17 @@ is
                           Aad     : in     Plaintext_Stream) with
      Depends => (This => (This,
                           Aad)),
-     Pre     => (Aad'First in Stream_Index    and then -- FIXME: Precondition is implicit, but without that the proof fails.
+     Pre     => (Aad'First in Stream_Index    and then
+                 --  FIXME: implicit, but apparently needed for proof
                  Setup_Nonce_Called (This)    and then
                  Ctx_Msg_Len (This) = 0       and then --  AAD processing must be done first
                  Ctx_AAD_Len (This) mod 4 = 0 and then --  can only make ONE sub-word call!
                  Ctx_AAD_Len (This) < Stream_Count'Last - Aad'Length),
-     Post    => (Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old) + Aad'Length and then
-                 Ctx_AAD_Xor (This) = Ctx_AAD_Xor (This'Old)              and then
-                 Ctx_Msg_Len (This) = 0                                   and then
-                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)            and then
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)     and then
+                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old) and then
+                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old) + Aad'Length  and then
+                 Ctx_Msg_Len (This) = 0                                    and then
+                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)             and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
 
    --
@@ -232,9 +246,6 @@ is
    --
    --  Using the cipher context This, this subprogram encrypts the Source into
    --  Destination.
-   --
-   --  Before using this function, Setup_Key and Setup_Nonce must be called to
-   --  ensure proper initialization of the context.
    --
    --  Encrypt_Bytes can be called several times in succession for different
    --  parts of the plaintext.
@@ -252,8 +263,9 @@ is
                  Source'Length = Destination'Length                                   and then
                  Setup_Nonce_Called (This)                                            and then
                  Ctx_Msg_Len (This) mod 4 = 0), --  Can only make ONE sub-word call!
-     Post    => (Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                 and then
-                 Ctx_AAD_Xor (This) = 0                                      and then
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)       and then
+                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)   and then
+                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                 and then
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)               and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
@@ -263,9 +275,6 @@ is
    --
    --  Using the cipher context This, this subprogram decrypts the Source into
    --  Destination.
-   --
-   --  Before using this function, Setup_Key and Setup_Nonce must be called to
-   --  ensure proper initialization of the context.
    --
    --  Decrypt_Bytes can be called several times in succession for different
    --  parts of the cipher text.
@@ -279,12 +288,13 @@ is
                                  This,
                                  Source)),
      Pre     => ((Source'First in Stream_Index and Destination'First in Stream_Index) and then
-                 --  FIXME: implicit, but needed for proof
-                 Source'Length = Destination'Length and then
-                 Setup_Nonce_Called (This)          and then
+                 --  FIXME: implicit, but apparently needed for proof
+                 Source'Length = Destination'Length                                   and then
+                 Setup_Nonce_Called (This)                                            and then
                  Ctx_Msg_Len (This) mod 4 = 0),
-     Post    => (Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                                      and then
-                 Ctx_AAD_Xor (This) = 0                                                                           and then
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                                            and then
+                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)                                        and then
+                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                                      and then
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                                    and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
@@ -295,12 +305,15 @@ is
    --  Calculates the message authentication code after a decryption or
    --  encryption and stores it in Mac.
    --
-   procedure Finalize (This : in     Context;
+   procedure Finalize (This : in out Context;
                        Mac  :    out MAC_Stream) with
-     Depends => (Mac  => (Mac, -- This isn't exactly True, but SPARK insists, probably because we rely on Mac'Length
+     Depends => (This => This,
+                 Mac  => (Mac, -- This isn't exactly True, but SPARK insists, probably because we rely on Mac'Length
                           This)),
-     Pre     => ((Setup_Nonce_Called (This) or else Ctx_AAD_Xor (This) = 0) and then
-                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8));
+     Pre     => (Setup_Nonce_Called (This) and then
+                 Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
+                 not Setup_Nonce_Called (This));
 
 private
 
@@ -337,8 +350,12 @@ private
 
    type Context is
       record
-         KS : Key_Schedule;
-         CS : Cipher_State;
+         KS        : Key_Schedule;
+         CS        : Cipher_State;
+         --  This state variables are merely here to ensure proper call sequences as precondition.
+         --  Also, they need to be automatically initialized.
+         Key_Set   : Boolean := False;
+         Nonce_Set : Boolean := False;
       end record;
 
    --  Proof functions
@@ -362,10 +379,9 @@ private
      (Ctx.CS.Msg_Len);
 
    function Setup_Key_Called (Ctx : Context) return Boolean is
-     (Ctx.KS.Key_Size in Key_Size_32 and
-      Ctx.KS.MAC_Size in MAC_Size_32);
+     (Ctx.Key_Set);
 
    function Setup_Nonce_Called (Ctx : Context) return Boolean is
-     (Ctx.CS.AAD_Xor /= 0);
+     (Ctx.Key_Set and then Ctx.Nonce_Set);
 
 end Crypto.Phelix;
