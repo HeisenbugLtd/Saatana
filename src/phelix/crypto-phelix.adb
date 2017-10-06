@@ -19,6 +19,18 @@
 package body Crypto.Phelix is
 
    --
+   --  Exclusive_Or
+   --
+   --  Returns Left xor Right for each element of the given operands.
+   --
+   procedure Exclusive_Or (Argument : in out Old_Z_4;
+                           Xor_With : in     Old_Z_4) with
+     Depends => (Argument => (Argument,
+                              Xor_With)),
+     Post    => (for all X in Argument'Range => Argument (X) = (Argument'Old (X) xor Xor_With (X))),
+     Inline  => True;
+
+   --
    --  To_Unsigned
    --
    --  Converts the maximum four first values of the given Stream to its
@@ -304,6 +316,19 @@ package body Crypto.Phelix is
    end Encrypt_Packet;
 
    --
+   --  Exclusive_Or
+   --
+   procedure Exclusive_Or (Argument : in out Old_Z_4;
+                           Xor_With : in     Old_Z_4) is
+   begin
+      for I in Argument'Range loop
+         Argument (I) := Argument (I) xor Xor_With (I);
+         pragma Loop_Invariant (for all S in Argument'First .. I =>
+                                  Argument (S) = (Argument'Loop_Entry (S) xor Xor_With (S)));
+      end loop;
+   end Exclusive_Or;
+
+   --
    --  Finalize
    --
    procedure Finalize (This : in out Context;
@@ -454,7 +479,6 @@ package body Crypto.Phelix is
                         Mac_Size : in     MAC_Size_32)
    is
       Key_Size : constant Key_Size_32 := 8 * Key'Length;
-      Z        : State_Words := (others => 0); --  FIXME: Unnecessary initialization. Speeds up proof, though.
    begin
       --  save key and mac sizes, nonce size is always 128
       This.KS.Key_Size := Key_Size;
@@ -487,34 +511,32 @@ package body Crypto.Phelix is
       end if;
 
       --  Now process the padded "raw" key, using a Feistel network
-      for I in Mod_8'Range loop
-         declare
-            K : Mod_8;
-         begin
-            K := 4 * (I mod 2);
-            pragma Assert (K in 0 | 4);
+      declare
+         Z : State_Words := (others => 0); --  FIXME: Unnecessary initialization. Speeds up proof, though.
+      begin
+         for I in Mod_8'Range loop
+            declare
+               K : Mod_8;
+            begin
+               K := 4 * (I mod 2);
 
-            Z (Z'First .. Z'Last - 1) := This.KS.X_0 (K .. K + 3);
-            Z (Z'Last)                := Key_Size / 8 + 64;
+               Z (Z'First .. Z'Last - 1) := This.KS.X_0 (K .. K + 3);
+               Z (Z'Last)                := Key_Size / 8 + 64;
 
-            H (Z              => Z,
-               Plaintext_Word => 0,
-               Key_Word       => 0);
-            H (Z              => Z,
-               Plaintext_Word => 0,
-               Key_Word       => 0);
+               H (Z              => Z,
+                  Plaintext_Word => 0,
+                  Key_Word       => 0);
+               H (Z              => Z,
+                  Plaintext_Word => 0,
+                  Key_Word       => 0);
 
-            K := K + 4; --  mod 8 is done automatically
-            pragma Assert (K in 4 | 0);
+               K := K + 4; --  mod 8 is done automatically
 
-            --  This.KS.X_0 (K .. K + 3) := This.KS.X_0 (K .. K + 3) xor Z (0 .. 3);
-            for J in Mod_8 range K .. K + 3 loop
-               This.KS.X_0 (J) := This.KS.X_0 (J) xor Z (J - K);
-               pragma Loop_Invariant (for all S in K .. J =>
-                                        This.KS.X_0 (S) = (This.KS.X_0'Loop_Entry (S) xor Z (S - K)));
-            end loop;
-         end;
-      end loop;
+               Exclusive_Or (Argument => This.KS.X_0 (K .. K + 3),
+                             Xor_With => Z (0 .. 3));
+            end;
+         end loop;
+      end;
 
       --  Key has been set up. Require a Nonce later.
       This.Key_Set   := True;
