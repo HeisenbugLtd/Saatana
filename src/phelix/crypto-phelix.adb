@@ -204,6 +204,10 @@ package body Crypto.Phelix is
       Process_AAD (This => This,
                    Aad  => Header);
       Msg_Header := Header;
+      pragma Annotate (GNATprove,
+                       Intentional,
+                       """Packet"" might not be initialized",
+                       "Full assignment is split between Msg_Header, and Msg_Body in Decrypt_Bytes.");
 
       --  These assertions are all proved and copy the pre-condition of Decrypt_Bytes.
       --  SPARK still can't prove that the precondition won't fail.
@@ -302,6 +306,10 @@ package body Crypto.Phelix is
       Process_AAD (This => This,
                    Aad  => Header);
       Msg_Header := Ciphertext_Stream (Header);
+      pragma Annotate (GNATprove,
+                       Intentional,
+                       """Packet"" might not be initialized",
+                       "Full assignment is split between Msg_Header, and Msg_Body in Encrypt_Bytes.");
 
       --  These assertions are all proved and copy the pre-condition of Decrypt_Bytes.
       --  SPARK still can't prove that the precondition won't fail.
@@ -312,6 +320,7 @@ package body Crypto.Phelix is
       Encrypt_Bytes (This        => This,
                      Source      => Payload,
                      Destination => Msg_Body);
+
       Finalize (This => This,
                 Mac  => Mac);
    end Encrypt_Packet;
