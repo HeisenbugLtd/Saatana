@@ -122,12 +122,15 @@ package body Crypto.Phelix is
                             Source      : in     Ciphertext_Stream;
                             Destination :    out Plaintext_Stream)
    is
+      pragma Assume (Source'First in Stream_Index);
+      pragma Assume (Destination'First in Stream_Index); --  FIXME: This should be implicit due to the type definition and thus
+                                                         --         easy to prove.
       J          : Mod_8;
       The_Key    : Interfaces.Unsigned_32;
       Plain_Text : Interfaces.Unsigned_32;
+      Msg_Len    : Stream_Count  := Source'Length;
       Src_Idx    : Stream_Offset := Source'First;
       Dst_Idx    : Stream_Offset := Destination'First;
-      Msg_Len    : Stream_Count  := Source'Length;
       Dst_Nxt    : Stream_Offset;
    begin
       This.CS.Msg_Len := This.CS.Msg_Len + Interfaces.Unsigned_32 (Msg_Len mod 2 ** 32);
@@ -179,11 +182,15 @@ package body Crypto.Phelix is
                               Increases => Src_Idx,
                               Increases => Dst_Idx,
                               Increases => Dst_Nxt);
-         pragma Loop_Invariant (Src_Idx >= Source'First      and Src_Idx = Source'Last      - Msg_Len + 1 and
+         pragma Loop_Invariant (Src_Idx = Source'Last      - Msg_Len + 1                                  and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt >= Destination'First and Dst_Nxt - 1 <= Destination'Last          and
                                 (for all X in Destination'First .. Dst_Nxt - 1 => Destination (X) in Byte));
       end loop;
+
+      --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
+      --  Destination - which has only been manually justified above.
+      pragma Assert (Dst_Idx > Destination'Last);
    end Decrypt_Bytes;
 
    --
@@ -194,30 +201,21 @@ package body Crypto.Phelix is
                              Header  : in     Plaintext_Stream;
                              Payload : in     Ciphertext_Stream;
                              Packet  :    out Plaintext_Stream;
-                             Mac     :    out MAC_Stream)
-   is
-      Msg_Header : Plaintext_Stream renames Packet (Packet'First .. Packet'First + Header'Length - 1);
-      Msg_Body   : Plaintext_Stream renames Packet (Packet'First + Header'Length .. Packet'Last);
+                             Mac     :    out MAC_Stream) is
    begin
       Setup_Nonce (This  => This,
                    Nonce => Nonce);
       Process_AAD (This => This,
                    Aad  => Header);
-      Msg_Header := Header;
+      Packet (Packet'First .. Packet'First + Header'Length - 1) := Header;
       pragma Annotate (GNATprove,
                        Intentional,
                        """Packet"" might not be initialized",
                        "Full assignment is split between Msg_Header, and Msg_Body in Decrypt_Bytes.");
 
-      --  These assertions are all proved and copy the pre-condition of Decrypt_Bytes.
-      --  SPARK still can't prove that the precondition won't fail.
-      pragma Assert (Payload'First in Stream_Index and Packet'First in Stream_Index);
-      pragma Assert (Msg_Body'Length = Payload'Length);
-      pragma Assert (Setup_Nonce_Called (This));
-      pragma Assert (This.CS.Msg_Len mod 4 = 0);
       Decrypt_Bytes (This        => This,
                      Source      => Payload,
-                     Destination => Msg_Body);
+                     Destination => Packet (Packet'First + Header'Length .. Packet'Last));
 
       Finalize (This => This,
                 Mac  => Mac);
@@ -230,14 +228,17 @@ package body Crypto.Phelix is
                             Source      : in     Plaintext_Stream;
                             Destination :    out Ciphertext_Stream)
    is
+      pragma Assume (Source'First in Stream_Index);
+      pragma Assume (Destination'First in Stream_Index); --  FIXME: Implicit by type definition.
+
       J           : Mod_8;
       The_Key     : Interfaces.Unsigned_32;
       Plain_Text  : Interfaces.Unsigned_32;
       Cipher_Text : Interfaces.Unsigned_32;
+      Msg_Len     : Stream_Count  := Source'Length;
       Src_Idx     : Stream_Offset := Source'First;
       Dst_Idx     : Stream_Offset := Destination'First;
       Dst_Nxt     : Stream_Offset;
-      Msg_Len     : Stream_Count  := Source'Length;
    begin
       This.CS.Msg_Len := This.CS.Msg_Len + Interfaces.Unsigned_32 (Msg_Len mod 2 ** 32);
       This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor; --  do the AAD xor, if needed
@@ -265,7 +266,7 @@ package body Crypto.Phelix is
             pragma Annotate (GNATprove,
                              False_Positive,
                              """Destination"" might not be initialized",
-                             """Destination""is initialized, there's an explicit assignment above");
+                             """Destination"" is initialized, there's an explicit assignment above");
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -282,11 +283,15 @@ package body Crypto.Phelix is
                               Increases => Src_Idx,
                               Increases => Dst_Idx,
                               Increases => Dst_Nxt);
-         pragma Loop_Invariant (Src_Idx >= Source'First      and Src_Idx = Source'Last      - Msg_Len + 1 and
+         pragma Loop_Invariant (Src_Idx = Source'Last      - Msg_Len + 1 and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt >= Destination'First and Dst_Nxt - 1 <= Destination'Last          and
                                 (for all X in Destination'First .. Dst_Nxt - 1 => Destination (X) in Byte));
       end loop;
+
+      --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
+      --  Destination - which has only been manually justified above.
+      pragma Assert (Dst_Idx > Destination'Last);
    end Encrypt_Bytes;
 
    --
@@ -298,28 +303,20 @@ package body Crypto.Phelix is
                              Payload : in     Plaintext_Stream;
                              Packet  :    out Ciphertext_Stream;
                              Mac     :    out MAC_Stream) is
-      Msg_Header : Ciphertext_Stream renames Packet (Packet'First .. Packet'First + Header'Length - 1);
-      Msg_Body   : Ciphertext_Stream renames Packet (Packet'First + Header'Length .. Packet'Last);
    begin
       Setup_Nonce (This  => This,
                    Nonce => Nonce);
       Process_AAD (This => This,
                    Aad  => Header);
-      Msg_Header := Ciphertext_Stream (Header);
+      Packet (Packet'First .. Packet'First + Header'Length - 1) := Ciphertext_Stream (Header);
       pragma Annotate (GNATprove,
                        Intentional,
                        """Packet"" might not be initialized",
                        "Full assignment is split between Msg_Header, and Msg_Body in Encrypt_Bytes.");
 
-      --  These assertions are all proved and copy the pre-condition of Decrypt_Bytes.
-      --  SPARK still can't prove that the precondition won't fail.
-      pragma Assert (Payload'First in Stream_Index and Packet'First in Stream_Index);
-      pragma Assert (Msg_Body'Length = Payload'Length);
-      pragma Assert (Setup_Nonce_Called (This));
-      pragma Assert (This.CS.Msg_Len mod 4 = 0);
       Encrypt_Bytes (This        => This,
                      Source      => Payload,
-                     Destination => Msg_Body);
+                     Destination => Packet (Packet'First + Header'Length .. Packet'Last));
 
       Finalize (This => This,
                 Mac  => Mac);
@@ -346,7 +343,7 @@ package body Crypto.Phelix is
    is
       MAC_WORDS  : constant := MAC_INIT_CNT + MAC_WORD_CNT;
       Plain_Text : Interfaces.Unsigned_32;
-      Mac_Index  : Stream_Offset;
+      Mac_Index  : Stream_Index;
       Tmp        : MAC_Stream (0 .. MAC_WORDS * 4 - 1);
       MAC_OFFSET : constant := Tmp'First + MAC_INIT_CNT * 4;
    begin
@@ -375,7 +372,7 @@ package body Crypto.Phelix is
                pragma Annotate (GNATprove,
                                 False_Positive,
                                 """Tmp"" might not be initialized",
-                                """Tmp"" is Initialized, there's an explicit assignment above");
+                                """Tmp"" is initialized, there's an explicit assignment above");
             end;
 
             H (Z              => This.CS.Z,
@@ -447,7 +444,9 @@ package body Crypto.Phelix is
    procedure Process_AAD (This : in out Context;
                           Aad  : in     Plaintext_Stream)
    is
-      Aad_Len : Stream_Count  := Aad'Length;
+      pragma Assume (Aad'First in Stream_Index); --  FIXME: Implicit by type definition.
+
+      Aad_Len : Stream_Count := Aad'Length;
       Src_Idx : Stream_Offset := Aad'First;
    begin
       This.CS.AAD_Len := This.CS.AAD_Len + Aad'Length;
@@ -506,23 +505,23 @@ package body Crypto.Phelix is
             declare
                Subkey_First : constant Stream_Offset :=
                                 Stream_Offset'Min (Key'First + Stream_Offset (I - This.KS.X_0'First) * 4, Key'Last + 1);
-               Subkey_Last  : constant Stream_Offset :=
-                                Stream_Offset'Min (Subkey_First + 3, Key'Last);
+               Subkey_Last  : constant Stream_Index :=
+                                Stream_Index'Min (Subkey_First + 3, Key'Last);
             begin
                This.KS.X_0 (I) := To_Unsigned (Key (Subkey_First .. Subkey_Last));
                pragma Loop_Invariant
                  (for all S in This.KS.X_0'First .. I =>
                     This.KS.X_0 (S) =
                       To_Unsigned (Key (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 ..
-                                   Stream_Offset'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
-                                                      Key'Last))));
+                                   Stream_Index'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
+                                                     Key'Last))));
             end;
          end loop;
       end if;
 
       --  Now process the padded "raw" key, using a Feistel network
       declare
-         Z : State_Words := (others => 0); --  FIXME: Unnecessary initialization. Speeds up proof, though.
+         Z : State_Words;
       begin
          for I in Mod_8'Range loop
             declare
@@ -530,8 +529,13 @@ package body Crypto.Phelix is
             begin
                K := 4 * (I mod 2);
 
-               Z (Z'First .. Z'Last - 1) := This.KS.X_0 (K .. K + 3);
-               Z (Z'Last)                := Key_Size / 8 + 64;
+               --  Assignment done via aggregrate rather than array concatenation
+               --  ("Z := This.KS.X_0 (K .. K + 3) & (Key_Size / 8 + 64);") as this is better handled by the prover.
+               Z := State_Words'(0 => This.KS.X_0 (K + 0),
+                                 1 => This.KS.X_0 (K + 1),
+                                 2 => This.KS.X_0 (K + 2),
+                                 3 => This.KS.X_0 (K + 3),
+                                 4 => Key_Size / 8 + 64);
 
                H (Z              => Z,
                   Plaintext_Word => 0,

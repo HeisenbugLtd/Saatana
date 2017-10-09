@@ -127,12 +127,9 @@ is
                             Nonce,
                             Header,
                             Payload)),
-     Pre     => (Header'First in Stream_Index                                     and then
-                 (Payload'First in Stream_Index and Packet'First in Stream_Index) and then
-                 --  FIXME: implicit, but apparently needed for proof
-                 Setup_Key_Called (This)                                          and then
-                 Header'Length + Payload'Length = Packet'Length                   and then
-                 Nonce'Length = Max_Nonce_Size / 8                                and then
+     Pre     => (Setup_Key_Called (This)                        and then
+                 Header'Length + Payload'Length = Packet'Length and then
+                 Nonce'Length = Max_Nonce_Size / 8              and then
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
                  not Setup_Nonce_Called (This));
@@ -167,12 +164,9 @@ is
                             Nonce,
                             Header,
                             Payload)),
-     Pre     => (Header'First in Stream_Index                                     and then
-                 (Payload'First in Stream_Index and Packet'First in Stream_Index) and then
-                 --  FIXME: implicit, but apparently needed for proof
-                 Setup_Key_Called (This)                                          and then
-                 Header'Length + Payload'Length = Packet'Length                   and then
-                 Nonce'Length = Max_Nonce_Size / 8                                and then
+     Pre     => (Setup_Key_Called (This)                        and then
+                 Header'Length + Payload'Length = Packet'Length and then
+                 Nonce'Length = Max_Nonce_Size / 8              and then
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
                  not Setup_Nonce_Called (This));
@@ -205,7 +199,7 @@ is
                           Nonce : in     Nonce_Stream) with
      Depends => (This => (This,
                           Nonce)),
-     Pre     => (Setup_Key_Called (This) and
+     Pre     => (Setup_Key_Called (This) and then
                  Nonce'Length = Max_Nonce_Size / 8),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
                  Setup_Nonce_Called (This)                             and then
@@ -228,9 +222,7 @@ is
                           Aad     : in     Plaintext_Stream) with
      Depends => (This => (This,
                           Aad)),
-     Pre     => (Aad'First in Stream_Index    and then
-                 --  FIXME: implicit, but apparently needed for proof
-                 Setup_Nonce_Called (This)    and then
+     Pre     => (Setup_Nonce_Called (This)    and then
                  Ctx_Msg_Len (This) = 0       and then --  AAD processing must be done first
                  Ctx_AAD_Len (This) mod 4 = 0 and then --  can only make ONE sub-word call!
                  Ctx_AAD_Len (This) < Stream_Count'Last - Aad'Length),
@@ -258,17 +250,19 @@ is
                  Destination => (This,
                                  Destination,
                                  Source)),
-     Pre     => ((Source'First in Stream_Index and Destination'First in Stream_Index) and then
-                 --  implicit, but needed for proof
-                 Source'Length = Destination'Length                                   and then
-                 Setup_Nonce_Called (This)                                            and then
+     Pre     => (Source'Length = Destination'Length and then
+                 Setup_Nonce_Called (This)          and then
                  Ctx_Msg_Len (This) mod 4 = 0), --  Can only make ONE sub-word call!
-     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)       and then
-                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)   and then
-                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                 and then
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                                            and then
+                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)                                        and then
+                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                                      and then
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
-                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)               and then
+                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                                    and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
+   pragma Annotate (GNATprove,
+                    False_Positive,
+                    """Destination"" might not be initialized",
+                    "Encrypt_Bytes ensures full initialization of ""Destination"".");
 
    --
    --  Decrypt_Bytes
@@ -287,10 +281,8 @@ is
                  Destination => (Destination,
                                  This,
                                  Source)),
-     Pre     => ((Source'First in Stream_Index and Destination'First in Stream_Index) and then
-                 --  FIXME: implicit, but apparently needed for proof
-                 Source'Length = Destination'Length                                   and then
-                 Setup_Nonce_Called (This)                                            and then
+     Pre     => (Source'Length = Destination'Length and then
+                 Setup_Nonce_Called (This)          and then
                  Ctx_Msg_Len (This) mod 4 = 0),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                                            and then
                  Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)                                        and then
@@ -298,6 +290,10 @@ is
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                                    and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
+   pragma Annotate (GNATprove,
+                    False_Positive,
+                    """Destination"" might not be initialized",
+                    "Decrypt_Bytes ensures full initialization of ""Destination"".");
 
    --
    --  Finalize
