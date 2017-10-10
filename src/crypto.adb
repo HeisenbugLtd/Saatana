@@ -18,33 +18,48 @@
 
 package body Crypto is
 
-   ---------
-   -- "+" --
-   ---------
-
+   --
+   --  "+"
+   --
    function "+" (Left  : in Nonce_Stream;
-                 Right : in Byte) return Nonce_Stream
+                 Right : in Nonce_Stream) return Nonce_Stream
    is
+      procedure Add_Carry (Left   : in out Byte;
+                           Right  : in     Byte;
+                           Carry  : in out Boolean) with
+        Inline  => True,
+        Depends => (Left => (Left,
+                             Right,
+                             Carry),
+                    Carry => (Left,
+                              Right)),
+        Post    => (Left = Left'Old + Right + Boolean'Pos (Carry'Old) and then
+                    Carry = (Left'Old + Right < Left'Old));
+
+      procedure Add_Carry (Left   : in out Byte;
+                           Right  : in     Byte;
+                           Carry  : in out Boolean)
+      is
+         Old_Carry : constant Boolean := Carry;
+      begin
+         Left := Left + Right;
+
+         Carry := Left < Right;
+         Left  := Left + Boolean'Pos (Old_Carry);
+      end Add_Carry;
+
       Result : Nonce_Stream := Left;
+      Carry  : Boolean      := False;
    begin
-      if Result'Length > 0 then
-         Result (Result'First) := Result (Result'First) + Right;
-
-         if Result (Result'First) < Right and then Result'Length > 1 then
-            --  If there was an overflow, we successively need to add 1 to the Nonce.
-            declare
-               Idx : Stream_Index := Result'First + 1;
-            begin
-               Add_Carry : loop
-                  Result (Idx) := Result (Idx) + 1;
-                  exit Add_Carry when Result (Idx) /= 0 or Idx = Result'Last;
-
-                  Idx := Idx + 1;
-                  pragma Loop_Invariant (Idx in Result'Range);
-               end loop Add_Carry;
-            end;
-         end if;
-      end if;
+      for Result_Idx in Result'Range loop
+         declare
+            Operand_Idx : constant Stream_Index := Result_Idx - Result'First + Right'First;
+         begin
+            Add_Carry (Left   => Result (Result_Idx),
+                       Right  => Right (Operand_Idx),
+                       Carry  => Carry);
+         end;
+      end loop;
 
       return Result;
    end "+";

@@ -31,9 +31,9 @@ package Crypto with
   SPARK_Mode => On
 is
 
-   type Stream_Offset   is               range 0 .. 2 ** 62 - 1; --  Restrict the range to accomodate the prover.
+   type Stream_Offset   is               range -2 ** 62 .. 2 ** 62 - 1; --  Restrict the range to accomodate the prover.
    subtype Stream_Index is Stream_Offset range 0 .. 2 ** 60 - 1;
-   subtype Stream_Count is Stream_Offset;
+   subtype Stream_Count is Stream_Offset range 0 .. 2 ** 62 - 1;
 
    type Byte is new Interfaces.Unsigned_8;
 
@@ -48,6 +48,10 @@ is
    type Nonce_Stream      is new General_Stream;
 
    function "+" (Left  : in Nonce_Stream;
-                 Right : in Byte) return Nonce_Stream;
+                 Right : in Nonce_Stream) return Nonce_Stream with
+     Global  => null,
+     Depends => ("+"'Result => (Left,
+                                Right)),
+     Pre     => (Right'Length = Left'Length);
 
 end Crypto;
