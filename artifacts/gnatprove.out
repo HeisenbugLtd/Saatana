@@ -1,4 +1,4 @@
-date               : 2017-10-09 15:08:02
+date               : 2017-10-10 14:39:47
 gnatprove version  : 2017 (20170515)
 host               : Windows 32 bits
 command line       : gnatprove.exe --assumptions --output-header -Psecurity.gpr
@@ -13,23 +13,27 @@ SPARK Analysis results        Total         Flow   Interval   CodePeer          
 -------------------------------------------------------------------------------------------------------------------------------------
 Data Dependencies                 .            .          .          .                                       .           .          .
 Flow Dependencies                 .            .          .          .                                       .           .          .
-Initialization                  108          101          .          .                                       .           7          .
+Initialization                  171          164          .          .                                       .           7          .
 Non-Aliasing                      .            .          .          .                                       .           .          .
-Run-time Checks                 167            .          .          .    167 (CVC4  97%, Z3  3%, altergo  0%)           .          .
-Assertions                       24            .          .          .                 24 (CVC4  88%, Z3  12%)           .          .
-Functional Contracts             18            .          .          .                  18 (CVC4  93%, Z3  7%)           .          .
+Run-time Checks                 167            .          .          .    167 (CVC4  98%, Z3  2%, altergo  0%)           .          .
+Assertions                       22            .          .          .                  22 (CVC4  93%, Z3  7%)           .          .
+Functional Contracts             19            .          .          .                  19 (CVC4  97%, Z3  3%)           .          .
 LSP Verification                  .            .          .          .                                       .           .          .
 -------------------------------------------------------------------------------------------------------------------------------------
-Total                           317    101 (32%)          .          .                               209 (66%)      7 (2%)          .
+Total                           379    164 (43%)          .          .                               208 (55%)      7 (2%)          .
 
 
 Analyzed 2 units
-in unit crypto, 2 subprograms and packages out of 2 analyzed
+in unit crypto, 3 subprograms and packages out of 3 analyzed
   Crypto at crypto.ads:29 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 absence of run-time errors of Crypto fully established
-  Crypto.Oadd at crypto.ads:50 flow analyzed (0 errors and 0 warnings) and proved (11 checks)
+  Crypto.Oadd at crypto.ads:50 flow analyzed (0 errors and 0 warnings) and proved (6 checks)
 effects on parameters and Global variables of Crypto.Oadd fully established
 absence of run-time errors of Crypto.Oadd fully established
+  Crypto.Oadd.Add_Carry at crypto.adb:27 flow analyzed (0 errors and 0 warnings) and proved (1 checks)
+the postcondition of Crypto.Oadd.Add_Carry fully established
+effects on parameters and Global variables of Crypto.Oadd.Add_Carry fully established
+absence of run-time errors of Crypto.Oadd.Add_Carry fully established
 in unit crypto-phelix, 28 subprograms and packages out of 28 analyzed
   Crypto.Phelix at crypto-phelix.ads:59 flow analyzed (0 errors and 0 warnings) and proved (1 checks)
 absence of run-time errors of Crypto.Phelix fully established
@@ -38,25 +42,25 @@ absence of run-time errors of Crypto.Phelix.Context fully established
   Crypto.Phelix.Ctx_AAD_Len at crypto-phelix.ads:80 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_AAD_Len fully established
 absence of run-time errors of Crypto.Phelix.Ctx_AAD_Len fully established
-  Crypto.Phelix.Ctx_AAD_Xor at crypto-phelix.ads:362 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.Ctx_AAD_Xor at crypto-phelix.ads:376 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_AAD_Xor fully established
 absence of run-time errors of Crypto.Phelix.Ctx_AAD_Xor fully established
-  Crypto.Phelix.Ctx_I at crypto-phelix.ads:83 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.Ctx_I at crypto-phelix.ads:84 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_I fully established
 absence of run-time errors of Crypto.Phelix.Ctx_I fully established
-  Crypto.Phelix.Ctx_Key_Size at crypto-phelix.ads:86 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.Ctx_Key_Size at crypto-phelix.ads:88 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_Key_Size fully established
 absence of run-time errors of Crypto.Phelix.Ctx_Key_Size fully established
-  Crypto.Phelix.Ctx_Mac_Size at crypto-phelix.ads:89 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.Ctx_Mac_Size at crypto-phelix.ads:92 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_Mac_Size fully established
 absence of run-time errors of Crypto.Phelix.Ctx_Mac_Size fully established
-  Crypto.Phelix.Ctx_Msg_Len at crypto-phelix.ads:92 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.Ctx_Msg_Len at crypto-phelix.ads:96 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_Msg_Len fully established
 absence of run-time errors of Crypto.Phelix.Ctx_Msg_Len fully established
-  Crypto.Phelix.Decrypt_Bytes at crypto-phelix.ads:276 flow analyzed (0 errors and 0 warnings) and proved (35 checks)
+  Crypto.Phelix.Decrypt_Bytes at crypto-phelix.ads:288 flow analyzed (0 errors and 0 warnings) and proved (35 checks)
    suppressed messages:
-    crypto-phelix.ads:278:29: Decrypt_Bytes ensures full initialization of "Destination".
-    crypto-phelix.adb:163:67: "Destination" is initialized, there's an explicit assignment above
+    crypto-phelix.ads:290:29: Decrypt_Bytes ensures full initialization of "Destination".
+    crypto-phelix.adb:172:67: "Destination" is initialized, there's an explicit assignment above
 the postcondition of Crypto.Phelix.Decrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
@@ -70,9 +74,9 @@ absence of run-time errors of Crypto.Phelix.Decrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Crypto.Phelix.Decrypt_Packet at crypto-phelix.ads:147 flow analyzed (0 errors and 0 warnings) and proved (10 checks)
+  Crypto.Phelix.Decrypt_Packet at crypto-phelix.ads:155 flow analyzed (0 errors and 0 warnings) and proved (10 checks)
    suppressed messages:
-    crypto-phelix.adb:210:65: Full assignment is split between Msg_Header, and Msg_Body in Decrypt_Bytes.
+    crypto-phelix.adb:219:65: Full assignment is split between Msg_Header, and Msg_Body in Decrypt_Bytes.
 the postcondition of Crypto.Phelix.Decrypt_Packet depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
@@ -86,10 +90,10 @@ absence of run-time errors of Crypto.Phelix.Decrypt_Packet depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Crypto.Phelix.Encrypt_Bytes at crypto-phelix.ads:245 flow analyzed (0 errors and 0 warnings) and proved (35 checks)
+  Crypto.Phelix.Encrypt_Bytes at crypto-phelix.ads:256 flow analyzed (0 errors and 0 warnings) and proved (35 checks)
    suppressed messages:
-    crypto-phelix.ads:247:29: Encrypt_Bytes ensures full initialization of "Destination".
-    crypto-phelix.adb:265:67: "Destination" is initialized, there's an explicit assignment above
+    crypto-phelix.ads:258:29: Encrypt_Bytes ensures full initialization of "Destination".
+    crypto-phelix.adb:274:67: "Destination" is initialized, there's an explicit assignment above
 the postcondition of Crypto.Phelix.Encrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
@@ -103,9 +107,9 @@ absence of run-time errors of Crypto.Phelix.Encrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Crypto.Phelix.Encrypt_Packet at crypto-phelix.ads:110 flow analyzed (0 errors and 0 warnings) and proved (11 checks)
+  Crypto.Phelix.Encrypt_Packet at crypto-phelix.ads:117 flow analyzed (0 errors and 0 warnings) and proved (11 checks)
    suppressed messages:
-    crypto-phelix.adb:311:65: Full assignment is split between Msg_Header, and Msg_Body in Encrypt_Bytes.
+    crypto-phelix.adb:320:65: Full assignment is split between Msg_Header, and Msg_Body in Encrypt_Bytes.
 the postcondition of Crypto.Phelix.Encrypt_Packet depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
@@ -123,9 +127,9 @@ absence of run-time errors of Crypto.Phelix.Encrypt_Packet depends on
 the postcondition of Crypto.Phelix.Exclusive_Or fully established
 effects on parameters and Global variables of Crypto.Phelix.Exclusive_Or fully established
 absence of run-time errors of Crypto.Phelix.Exclusive_Or fully established
-  Crypto.Phelix.Finalize at crypto-phelix.ads:304 flow analyzed (0 errors and 0 warnings) and proved (28 checks)
+  Crypto.Phelix.Finalize at crypto-phelix.ads:317 flow analyzed (0 errors and 0 warnings) and proved (28 checks)
    suppressed messages:
-    crypto-phelix.adb:371:74: "Tmp" is initialized, there's an explicit assignment above
+    crypto-phelix.adb:380:74: "Tmp" is initialized, there's an explicit assignment above
 the postcondition of Crypto.Phelix.Finalize depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
@@ -139,7 +143,7 @@ absence of run-time errors of Crypto.Phelix.Finalize depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Crypto.Phelix.H at crypto-phelix.adb:107 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.H at crypto-phelix.adb:115 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.H depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
 absence of run-time errors of Crypto.Phelix.H depends on
@@ -151,7 +155,7 @@ absence of run-time errors of Crypto.Phelix.Key_Size_32Predicate fully establish
   Crypto.Phelix.MAC_Size_32Predicate at crypto-phelix.ads:71 flow analyzed (0 errors and 0 warnings) and proved (1 checks)
 effects on parameters and Global variables of Crypto.Phelix.MAC_Size_32Predicate fully established
 absence of run-time errors of Crypto.Phelix.MAC_Size_32Predicate fully established
-  Crypto.Phelix.Process_AAD at crypto-phelix.ads:221 flow analyzed (0 errors and 0 warnings) and proved (15 checks)
+  Crypto.Phelix.Process_AAD at crypto-phelix.ads:231 flow analyzed (0 errors and 0 warnings) and proved (15 checks)
 the postcondition of Crypto.Phelix.Process_AAD depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
@@ -160,7 +164,7 @@ effects on parameters and Global variables of Crypto.Phelix.Process_AAD depends 
 absence of run-time errors of Crypto.Phelix.Process_AAD depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
-  Crypto.Phelix.Setup_Key at crypto-phelix.ads:179 flow analyzed (0 errors and 0 warnings) and proved (30 checks)
+  Crypto.Phelix.Setup_Key at crypto-phelix.ads:188 flow analyzed (0 errors and 0 warnings) and proved (33 checks)
 the postcondition of Crypto.Phelix.Setup_Key depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
@@ -169,10 +173,10 @@ effects on parameters and Global variables of Crypto.Phelix.Setup_Key depends on
 absence of run-time errors of Crypto.Phelix.Setup_Key depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
-  Crypto.Phelix.Setup_Key_Called at crypto-phelix.ads:97 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.Setup_Key_Called at crypto-phelix.ads:102 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Setup_Key_Called fully established
 absence of run-time errors of Crypto.Phelix.Setup_Key_Called fully established
-  Crypto.Phelix.Setup_Nonce at crypto-phelix.ads:198 flow analyzed (0 errors and 0 warnings) and proved (8 checks)
+  Crypto.Phelix.Setup_Nonce at crypto-phelix.ads:207 flow analyzed (0 errors and 0 warnings) and proved (8 checks)
 the postcondition of Crypto.Phelix.Setup_Nonce depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
@@ -181,10 +185,10 @@ effects on parameters and Global variables of Crypto.Phelix.Setup_Nonce depends 
 absence of run-time errors of Crypto.Phelix.Setup_Nonce depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
-  Crypto.Phelix.Setup_Nonce_Called at crypto-phelix.ads:100 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.Setup_Nonce_Called at crypto-phelix.ads:106 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Setup_Nonce_Called fully established
 absence of run-time errors of Crypto.Phelix.Setup_Nonce_Called fully established
-  Crypto.Phelix.To_Stream at crypto-phelix.adb:81 flow analyzed (0 errors and 0 warnings) and proved (9 checks)
+  Crypto.Phelix.To_Stream at crypto-phelix.adb:87 flow analyzed (0 errors and 0 warnings) and proved (9 checks)
 the postcondition of Crypto.Phelix.To_Stream depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Shift_Right
@@ -193,18 +197,18 @@ effects on parameters and Global variables of Crypto.Phelix.To_Stream depends on
 absence of run-time errors of Crypto.Phelix.To_Stream depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Shift_Right
-  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:40 flow analyzed (0 errors and 0 warnings) and proved (8 checks)
+  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:41 flow analyzed (0 errors and 0 warnings) and proved (8 checks)
 effects on parameters and Global variables of Crypto.Phelix.To_Unsigned fully established
 absence of run-time errors of Crypto.Phelix.To_Unsigned fully established
-  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:50 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:52 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.To_Unsigned fully established
 absence of run-time errors of Crypto.Phelix.To_Unsigned fully established
-  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:57 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:60 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.To_Unsigned fully established
 absence of run-time errors of Crypto.Phelix.To_Unsigned fully established
-  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:64 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:68 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.To_Unsigned fully established
 absence of run-time errors of Crypto.Phelix.To_Unsigned fully established
-  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:71 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
+  Crypto.Phelix.To_Unsigned at crypto-phelix.adb:76 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.To_Unsigned fully established
 absence of run-time errors of Crypto.Phelix.To_Unsigned fully established
