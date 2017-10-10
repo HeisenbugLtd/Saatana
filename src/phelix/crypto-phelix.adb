@@ -26,6 +26,7 @@ package body Crypto.Phelix is
    --
    procedure Exclusive_Or (Argument : in out Old_Z_4;
                            Xor_With : in     Old_Z_4) with
+     Global  => null,
      Depends => (Argument => (Argument,
                               Xor_With)),
      Post    => (for all X in Argument'Range => Argument (X) = (Argument'Old (X) xor Xor_With (X))),
@@ -42,6 +43,7 @@ package body Crypto.Phelix is
       (if Value'Length > 1 then Interfaces.Unsigned_32 (Value (Value'First + 1)) * 2 **  8 else 0) +
       (if Value'Length > 2 then Interfaces.Unsigned_32 (Value (Value'First + 2)) * 2 ** 16 else 0) +
       (if Value'Length > 3 then Interfaces.Unsigned_32 (Value (Value'First + 3)) * 2 ** 24 else 0)) with
+   Global  => null,
    Depends => (To_Unsigned'Result => (Value));
 
    --
@@ -49,6 +51,7 @@ package body Crypto.Phelix is
    --
    function To_Unsigned (Value : in Ciphertext_Stream) return Interfaces.Unsigned_32 is
      (To_Unsigned (General_Stream (Value))) with
+   Global  => null,
    Depends => (To_Unsigned'Result => (Value));
 
    --
@@ -56,6 +59,7 @@ package body Crypto.Phelix is
    --
    function To_Unsigned (Value : in Key_Stream) return Interfaces.Unsigned_32 is
      (To_Unsigned (General_Stream (Value))) with
+   Global  => null,
    Depends => (To_Unsigned'Result => (Value));
 
    --
@@ -63,6 +67,7 @@ package body Crypto.Phelix is
    --
    function To_Unsigned (Value : in Nonce_Stream) return Interfaces.Unsigned_32 is
      (To_Unsigned (General_Stream (Value))) with
+   Global  => null,
    Depends => (To_Unsigned'Result => (Value));
 
    --
@@ -70,7 +75,8 @@ package body Crypto.Phelix is
    --
    function To_Unsigned (Value : in Plaintext_Stream) return Interfaces.Unsigned_32 is
      (To_Unsigned (General_Stream (Value))) with
-   Depends => (To_Unsigned'Result => (Value));
+   Global  => null,
+   Depends => (To_Unsigned'Result => Value);
 
    --
    --  To_Stream
@@ -84,7 +90,9 @@ package body Crypto.Phelix is
         1 => Byte (Interfaces.Shift_Right (Value,  8) mod 256),
         2 => Byte (Interfaces.Shift_Right (Value, 16) mod 256),
         3 => Byte (Interfaces.Shift_Right (Value, 24) mod 256))) with
-   Post => (To_Stream'Result'Length = 4 and To_Stream'Result'First = 0);
+   Global  => null,
+   Depends => (To_Stream'Result => Value),
+   Post    => (To_Stream'Result'Length = 4 and To_Stream'Result'First = 0);
 
    --  Phelix algorithm internal constants
    OLD_Z_REG    : constant := 4;                  --  which var used for "old" state
@@ -107,6 +115,7 @@ package body Crypto.Phelix is
    procedure H (Z              : in out State_Words;
                 Plaintext_Word : in     Interfaces.Unsigned_32;
                 Key_Word       : in     Interfaces.Unsigned_32) with
+     Global  => null,
      Depends => (Z => (Z, Plaintext_Word, Key_Word));
 
    MASK : constant array (Stream_Count range 1 .. 4) of Interfaces.Unsigned_32 :=
@@ -483,12 +492,22 @@ package body Crypto.Phelix is
    --
    --  Setup_Key
    --
-   procedure Setup_Key (This     : in out Context;
+   procedure Setup_Key (This     :    out Context;
                         Key      : in     Key_Stream;
                         Mac_Size : in     MAC_Size_32)
    is
       Key_Size : constant Key_Size_32 := 8 * Key'Length;
    begin
+      --  These values are going to be overwritten by Setup_Nonce.
+      --  We initialize them here merely to satisfy the prover.
+      This.CS := Cipher_State'(Old_Z   => (others => 0),
+                               Z       => (others => 0),
+                               AAD_Len => 0,
+                               I       => 0,
+                               Msg_Len => 0,
+                               AAD_Xor => 0);
+      This.KS.X_1 := (others => 0);
+
       --  save key and mac sizes, nonce size is always 128
       This.KS.Key_Size := Key_Size;
       This.KS.MAC_Size := Mac_Size;
@@ -496,11 +515,12 @@ package body Crypto.Phelix is
       --  pre-compute X_1_bump "constant" to save clock cycles during Setup_Nonce
       This.KS.X_1_Bump := Key_Size / 2 + 256 * (Mac_Size mod Max_MAC_Size);
 
-      --  copy key to X[], in correct endianness
-      --  Special case for zero length key, then we just set everything to 0.
-      if Key'Length = 0 then
-         This.KS.X_0 := (others => 0);
-      else
+      --  copy key to X_0, in correct endianness
+      --  Special case for zero length key, there we just set everything to 0.
+      --  This is done unconditionally to satisfy the prover that X_0 is fully initialized in each path.
+      This.KS.X_0 := (others => 0);
+
+      if Key'Length /= 0 then
          for I in This.KS.X_0'Range loop
             declare
                Subkey_First : constant Stream_Offset :=
@@ -513,8 +533,8 @@ package body Crypto.Phelix is
                  (for all S in This.KS.X_0'First .. I =>
                     This.KS.X_0 (S) =
                       To_Unsigned (Key (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 ..
-                                   Stream_Index'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
-                                                     Key'Last))));
+                                        Stream_Index'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
+                                                          Key'Last))));
             end;
          end loop;
       end if;

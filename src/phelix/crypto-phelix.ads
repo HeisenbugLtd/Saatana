@@ -78,27 +78,34 @@ is
 
    --  Proof functions.
    function Ctx_AAD_Len (Ctx : Context) return Stream_Count with
-     Ghost => True;
+     Ghost  => True,
+     Global => null;
 
    function Ctx_I (Ctx : Context) return Interfaces.Unsigned_32 with
-     Ghost => True;
+     Ghost  => True,
+     Global => null;
 
    function Ctx_Key_Size (Ctx : Context) return Key_Size_32 with
-     Ghost => True;
+     Ghost  => True,
+     Global => null;
 
    function Ctx_Mac_Size (Ctx : Context) return MAC_Size_32 with
-     Ghost => True;
+     Ghost  => True,
+     Global => null;
 
    function Ctx_Msg_Len (Ctx : Context) return Interfaces.Unsigned_32 with
-     Ghost => True;
+     Ghost  => True,
+     Global => null;
 
    --  As the order in which calls are made are important, we define some proof
    --  functions to be used as precondition.
    function Setup_Key_Called (Ctx : Context) return Boolean with
-     Ghost => True;
+     Ghost  => True,
+     Global => null;
 
    function Setup_Nonce_Called (Ctx : Context) return Boolean with
-     Ghost => True;
+     Ghost  => True,
+     Global => null;
 
    --
    --  Encrypt_Packet
@@ -113,6 +120,7 @@ is
                              Payload : in     Plaintext_Stream;
                              Packet  :    out Ciphertext_Stream;
                              Mac     :    out MAC_Stream) with
+     Global  => null,
      Depends => (This   => (This,
                             Nonce,
                             Header,
@@ -150,6 +158,7 @@ is
                              Payload : in     Ciphertext_Stream;
                              Packet  :    out Plaintext_Stream;
                              Mac     :    out MAC_Stream) with
+     Global  => null,
      Depends => (This   => (This,
                             Nonce,
                             Header,
@@ -176,11 +185,11 @@ is
    --
    --  Initializes the key schedule of the cipher context This.
    --
-   procedure Setup_Key (This     : in out Context;
+   procedure Setup_Key (This     :    out Context;
                         Key      : in     Key_Stream;
                         Mac_Size : in     MAC_Size_32) with
-     Depends => (This => (This,
-                          Key,
+     Global  => null,
+     Depends => (This => (Key,
                           Mac_Size)),
      Pre     => (Key'Length <= Max_Key_Size / 8), -- Support key sizes between 0 and 256 bits
      Post    => (Setup_Key_Called (This)              and then
@@ -197,6 +206,7 @@ is
    --
    procedure Setup_Nonce (This  : in out Context;
                           Nonce : in     Nonce_Stream) with
+     Global  => null,
      Depends => (This => (This,
                           Nonce)),
      Pre     => (Setup_Key_Called (This) and then
@@ -220,6 +230,7 @@ is
    --
    procedure Process_AAD (This    : in out Context;
                           Aad     : in     Plaintext_Stream) with
+     Global  => null,
      Depends => (This => (This,
                           Aad)),
      Pre     => (Setup_Nonce_Called (This)    and then
@@ -245,6 +256,7 @@ is
    procedure Encrypt_Bytes (This        : in out Context;
                             Source      : in     Plaintext_Stream;
                             Destination :    out Ciphertext_Stream) with
+     Global  => null,
      Depends => (This        => (This,
                                  Source),
                  Destination => (This,
@@ -276,6 +288,7 @@ is
    procedure Decrypt_Bytes (This        : in out Context;
                             Source      : in     Ciphertext_Stream;
                             Destination :    out Plaintext_Stream) with
+     Global  => null,
      Depends => (This        => (This,
                                  Source),
                  Destination => (Destination,
@@ -303,6 +316,7 @@ is
    --
    procedure Finalize (This : in out Context;
                        Mac  :    out MAC_Stream) with
+     Global  => null,
      Depends => (This => This,
                  Mac  => (Mac, -- This isn't exactly True, but SPARK insists, probably because we rely on Mac'Length
                           This)),
