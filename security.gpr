@@ -14,7 +14,7 @@ project Security is
    end Builder;
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnatwa", "-gnatyyyaAbcdefhiklM128noOprsStux3", "-gnato", "-fstack-check", "-gnat12", "-fcallgraph-info=su,da", "-g", "-O2");
+      for Default_Switches ("ada") use ("-gnatwa", "-gnatyaAbcdefhiklM128noOprsStux3", "-gnato", "-fstack-check", "-gnat12", "-fcallgraph-info=su,da", "-g", "-O2");
    end Compiler;
 
    package Binder is
@@ -22,11 +22,11 @@ project Security is
    end Binder;
 
    package Linker is
-      for Default_Switches ("ada") use ("-g", "-g");
+      for Default_Switches ("ada") use ("-g");
    end Linker;
 
    package Prove is
-      for Switches use ("--mode=all", "--level=4", "--proof=progressive", "--timeout=60", "-j3");
+      for Switches use ("--mode=all", "--prover=cvc4,z3,altergo", "--proof=progressive", "--steps=131072", "-j3");
    end Prove;
 
    package Check is
