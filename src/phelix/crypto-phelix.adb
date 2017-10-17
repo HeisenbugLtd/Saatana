@@ -103,6 +103,10 @@ package body Crypto.Phelix is
    MAC_Magic_XOR : constant Interfaces.Unsigned_32 := 16#912D94F1#; --  magic constant for MAC
    AAD_Magic_XOR : constant Interfaces.Unsigned_32 := 16#AADAADAA#; --  magic constant for AAD
 
+   --  Rename Interfaces.Rotate_Left to make following post condition more readable.
+   function ROL_32 (Value  : Interfaces.Unsigned_32;
+                    Amount : Natural) return Interfaces.Unsigned_32 renames Interfaces.Rotate_Left;
+
    --
    --  H
    --
@@ -116,7 +120,33 @@ package body Crypto.Phelix is
                 Plaintext_Word : in     Interfaces.Unsigned_32;
                 Key_Word       : in     Interfaces.Unsigned_32) with
      Global  => null,
-     Depends => (Z => (Z, Plaintext_Word, Key_Word));
+     Depends => (Z => (Z, Plaintext_Word, Key_Word)),
+     Post    => (Z = (0 => ROL_32 (ROL_32 (Z'Old (0) + (Z'Old (3) xor Plaintext_Word), 9) xor
+                                   ((ROL_32 (Z'Old (3), 15) xor
+                                     (Z'Old (1) + Z'Old (4))) +
+                                    Key_Word),
+                                   20),
+                      1 => ROL_32 ((ROL_32 (Z'Old (1) + Z'Old (4), 10) xor
+                                    ROL_32 (Z'Old (4), 25) +
+                                    (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))),
+                                   11),
+                      2 => ROL_32 (ROL_32 ((Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word))), 17) +
+                                   (ROL_32 (Z'Old (0) + (Z'Old (3) xor Plaintext_Word), 9) xor
+                                   ((ROL_32 (Z'Old (3), 15) xor
+                                     (Z'Old (1) + Z'Old (4))) +
+                                    Key_Word)),
+                                   5),
+                      3 => ROL_32 (((ROL_32 (Z'Old (3), 15)) xor (Z'Old (1) + Z'Old (4))), 30) +
+                           (ROL_32 ((Z'Old (1) + Z'Old (4)), 10) xor
+                            ROL_32 (Z'Old (4), 25) +
+                            (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))),
+                      4 => (ROL_32 ((ROL_32 (Z'Old (4), 25) +
+                            (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))), 13)) xor
+                           (ROL_32 ((Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word))), 17) +
+                            ((ROL_32 ((Z'Old (0) + (Z'Old (3) xor Plaintext_Word)), 9) xor
+                              ((ROL_32 (Z'Old (3), 15) xor
+                                (Z'Old (1) + Z'Old (4))) +
+                               Key_Word))))));
 
    MASK : constant array (Stream_Count range 1 .. 4) of Interfaces.Unsigned_32 :=
             (16#00_00_00_FF#,
