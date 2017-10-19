@@ -35,21 +35,7 @@ package body Crypto.Phelix is
    --
    --  To_Unsigned
    --
-   --  Converts the maximum four first values of the given Stream to its
-   --  Unsigned_32 value, assuming Low_Order_First byte order (little endian).
-   --
-   function To_Unsigned (Value : in General_Stream) return Interfaces.Unsigned_32 is
-     ((if Value'Length > 0 then Interfaces.Unsigned_32 (Value (Value'First + 0)) * 2 **  0 else 0) +
-      (if Value'Length > 1 then Interfaces.Unsigned_32 (Value (Value'First + 1)) * 2 **  8 else 0) +
-      (if Value'Length > 2 then Interfaces.Unsigned_32 (Value (Value'First + 2)) * 2 ** 16 else 0) +
-      (if Value'Length > 3 then Interfaces.Unsigned_32 (Value (Value'First + 3)) * 2 ** 24 else 0)) with
-   Global  => null,
-   Depends => (To_Unsigned'Result => (Value));
-
-   --
-   --  To_Unsigned
-   --
-   function To_Unsigned (Value : in Ciphertext_Stream) return Interfaces.Unsigned_32 is
+   function To_Unsigned (Value : in Ciphertext_Stream) return Word_32 is
      (To_Unsigned (General_Stream (Value))) with
    Global  => null,
    Depends => (To_Unsigned'Result => (Value));
@@ -57,7 +43,7 @@ package body Crypto.Phelix is
    --
    --  To_Unsigned
    --
-   function To_Unsigned (Value : in Key_Stream) return Interfaces.Unsigned_32 is
+   function To_Unsigned (Value : in Key_Stream) return Word_32 is
      (To_Unsigned (General_Stream (Value))) with
    Global  => null,
    Depends => (To_Unsigned'Result => (Value));
@@ -65,7 +51,7 @@ package body Crypto.Phelix is
    --
    --  To_Unsigned
    --
-   function To_Unsigned (Value : in Nonce_Stream) return Interfaces.Unsigned_32 is
+   function To_Unsigned (Value : in Nonce_Stream) return Word_32 is
      (To_Unsigned (General_Stream (Value))) with
    Global  => null,
    Depends => (To_Unsigned'Result => (Value));
@@ -73,39 +59,19 @@ package body Crypto.Phelix is
    --
    --  To_Unsigned
    --
-   function To_Unsigned (Value : in Plaintext_Stream) return Interfaces.Unsigned_32 is
+   function To_Unsigned (Value : in Plaintext_Stream) return Word_32 is
      (To_Unsigned (General_Stream (Value))) with
    Global  => null,
    Depends => (To_Unsigned'Result => Value);
 
-   --
-   --  To_Stream
-   --
-   --  Converts the given Unsigned_32 value to a stream in Low_Order_First
-   --  byte order (little endian).
-   --
-   function To_Stream (Value : in Interfaces.Unsigned_32) return General_Stream is
-     (General_Stream'
-       (0 => Byte (Interfaces.Shift_Right (Value,  0) mod 256),
-        1 => Byte (Interfaces.Shift_Right (Value,  8) mod 256),
-        2 => Byte (Interfaces.Shift_Right (Value, 16) mod 256),
-        3 => Byte (Interfaces.Shift_Right (Value, 24) mod 256))) with
-   Global  => null,
-   Depends => (To_Stream'Result => Value),
-   Post    => (To_Stream'Result'Length = 4 and To_Stream'Result'First = 0);
-
    --  Phelix algorithm internal constants
-   OLD_Z_REG    : constant := 4;                  --  which var used for "old" state
-   MAC_INIT_CNT : constant := 8;                  --  how many words of pre-MAC mixing
+   OLD_Z_REG    : constant := 4;                 --  which var used for "old" state
+   MAC_INIT_CNT : constant := 8;                 --  how many words of pre-MAC mixing
    MAC_WORD_CNT : constant := Max_MAC_Size / 32; --  how many words of MAC output
 
    --  XOR constants
-   MAC_Magic_XOR : constant Interfaces.Unsigned_32 := 16#912D94F1#; --  magic constant for MAC
-   AAD_Magic_XOR : constant Interfaces.Unsigned_32 := 16#AADAADAA#; --  magic constant for AAD
-
-   --  Rename Interfaces.Rotate_Left to make following post condition more readable.
-   function ROL_32 (Value  : Interfaces.Unsigned_32;
-                    Amount : Natural) return Interfaces.Unsigned_32 renames Interfaces.Rotate_Left;
+   MAC_Magic_XOR : constant Word_32 := 16#912D94F1#; --  magic constant for MAC
+   AAD_Magic_XOR : constant Word_32 := 16#AADAADAA#; --  magic constant for AAD
 
    --
    --  H
@@ -117,38 +83,33 @@ package body Crypto.Phelix is
    --  merges them into a single function.
    --
    procedure H (Z              : in out State_Words;
-                Plaintext_Word : in     Interfaces.Unsigned_32;
-                Key_Word       : in     Interfaces.Unsigned_32) with
+                Plaintext_Word : in     Word_32;
+                Key_Word       : in     Word_32) with
      Global  => null,
      Depends => (Z => (Z, Plaintext_Word, Key_Word)),
-     Post    => (Z = (0 => ROL_32 (ROL_32 (Z'Old (0) + (Z'Old (3) xor Plaintext_Word), 9) xor
-                                   ((ROL_32 (Z'Old (3), 15) xor
-                                     (Z'Old (1) + Z'Old (4))) +
-                                    Key_Word),
-                                   20),
-                      1 => ROL_32 ((ROL_32 (Z'Old (1) + Z'Old (4), 10) xor
-                                    ROL_32 (Z'Old (4), 25) +
-                                    (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))),
-                                   11),
-                      2 => ROL_32 (ROL_32 ((Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word))), 17) +
-                                   (ROL_32 (Z'Old (0) + (Z'Old (3) xor Plaintext_Word), 9) xor
-                                   ((ROL_32 (Z'Old (3), 15) xor
-                                     (Z'Old (1) + Z'Old (4))) +
-                                    Key_Word)),
-                                   5),
-                      3 => ROL_32 (((ROL_32 (Z'Old (3), 15)) xor (Z'Old (1) + Z'Old (4))), 30) +
-                           (ROL_32 ((Z'Old (1) + Z'Old (4)), 10) xor
-                            ROL_32 (Z'Old (4), 25) +
-                            (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))),
-                      4 => (ROL_32 ((ROL_32 (Z'Old (4), 25) +
+     Post    => (Z = (0 => Rotate_Left (Rotate_Left (Z'Old (0) + (Z'Old (3) xor Plaintext_Word), 9) xor
+                                        ((Rotate_Left (Z'Old (3), 15) xor (Z'Old (1) + Z'Old (4))) + Key_Word),
+                                        20),
+                      1 => Rotate_Left ((Rotate_Left (Z'Old (1) + Z'Old (4), 10) xor Rotate_Left (Z'Old (4), 25) +
+                                         (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))),
+                                        11),
+                      2 => Rotate_Left (Rotate_Left ((Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word))), 17) +
+                                        (Rotate_Left (Z'Old (0) +
+                                         (Z'Old (3) xor Plaintext_Word), 9) xor
+                                         ((Rotate_Left (Z'Old (3), 15) xor (Z'Old (1) + Z'Old (4))) +
+                                          Key_Word)),
+                                        5),
+                      3 => Rotate_Left (((Rotate_Left (Z'Old (3), 15)) xor (Z'Old (1) + Z'Old (4))), 30) +
+                           (Rotate_Left ((Z'Old (1) + Z'Old (4)), 10) xor Rotate_Left (Z'Old (4), 25) +
+                           (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))),
+                      4 => (Rotate_Left ((Rotate_Left (Z'Old (4), 25) +
                             (Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word)))), 13)) xor
-                           (ROL_32 ((Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word))), 17) +
-                            ((ROL_32 ((Z'Old (0) + (Z'Old (3) xor Plaintext_Word)), 9) xor
-                              ((ROL_32 (Z'Old (3), 15) xor
-                                (Z'Old (1) + Z'Old (4))) +
+                           (Rotate_Left ((Z'Old (2) xor (Z'Old (0) + (Z'Old (3) xor Plaintext_Word))), 17) +
+                            ((Rotate_Left ((Z'Old (0) + (Z'Old (3) xor Plaintext_Word)), 9) xor
+                              ((Rotate_Left (Z'Old (3), 15) xor (Z'Old (1) + Z'Old (4))) +
                                Key_Word))))));
 
-   MASK : constant array (Stream_Count range 1 .. 4) of Interfaces.Unsigned_32 :=
+   MASK : constant array (Stream_Count range 1 .. 4) of Word_32 :=
             (16#00_00_00_FF#,
              16#00_00_FF_FF#,
              16#00_FF_FF_FF#,
@@ -165,14 +126,14 @@ package body Crypto.Phelix is
       pragma Assume (Destination'First in Stream_Index); --  FIXME: This should be implicit due to the type definition and thus
                                                          --         easy to prove.
       J          : Mod_8;
-      The_Key    : Interfaces.Unsigned_32;
-      Plain_Text : Interfaces.Unsigned_32;
+      The_Key    : Word_32;
+      Plain_Text : Word_32;
       Msg_Len    : Stream_Count  := Source'Length;
       Src_Idx    : Stream_Offset := Source'First;
       Dst_Idx    : Stream_Offset := Destination'First;
       Dst_Nxt    : Stream_Offset;
    begin
-      This.CS.Msg_Len := This.CS.Msg_Len + Interfaces.Unsigned_32 (Msg_Len mod 2 ** 32);
+      This.CS.Msg_Len := This.CS.Msg_Len + Word_32 (Msg_Len mod 2 ** 32);
       This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor; --  do the AAD xor, if needed
       This.CS.AAD_Xor := 0; --  Next time, the xor will be a nop
 
@@ -199,7 +160,7 @@ package body Crypto.Phelix is
 
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Plaintext_Stream (To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (for all X in Dst_Idx .. Dst_Nxt - 1 => Destination (X) in Byte);
+            pragma Assert (for all X of Destination (Dst_Idx .. Dst_Nxt - 1) => X in Byte);
             pragma Annotate (GNATprove,
                              False_Positive,
                              """Destination"" might not be initialized",
@@ -224,7 +185,7 @@ package body Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last      - Msg_Len + 1                                  and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt >= Destination'First and Dst_Nxt - 1 <= Destination'Last          and
-                                (for all X in Destination'First .. Dst_Nxt - 1 => Destination (X) in Byte));
+                                (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte));
       end loop;
 
       --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
@@ -271,15 +232,15 @@ package body Crypto.Phelix is
       pragma Assume (Destination'First in Stream_Index); --  FIXME: Implicit by type definition.
 
       J           : Mod_8;
-      The_Key     : Interfaces.Unsigned_32;
-      Plain_Text  : Interfaces.Unsigned_32;
-      Cipher_Text : Interfaces.Unsigned_32;
+      The_Key     : Word_32;
+      Plain_Text  : Word_32;
+      Cipher_Text : Word_32;
       Msg_Len     : Stream_Count  := Source'Length;
       Src_Idx     : Stream_Offset := Source'First;
       Dst_Idx     : Stream_Offset := Destination'First;
       Dst_Nxt     : Stream_Offset;
    begin
-      This.CS.Msg_Len := This.CS.Msg_Len + Interfaces.Unsigned_32 (Msg_Len mod 2 ** 32);
+      This.CS.Msg_Len := This.CS.Msg_Len + Word_32 (Msg_Len mod 2 ** 32);
       This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor; --  do the AAD xor, if needed
       This.CS.AAD_Xor := 0; --  Next time, the xor will be a nop
 
@@ -301,7 +262,7 @@ package body Crypto.Phelix is
             Cipher_Text := The_Key xor Plain_Text;
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Ciphertext_Stream (To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (for all X in Dst_Idx .. Dst_Nxt - 1 => Destination (X) in Byte);
+            pragma Assert (for all X of Destination (Dst_Idx .. Dst_Nxt - 1) => X in Byte);
             pragma Annotate (GNATprove,
                              False_Positive,
                              """Destination"" might not be initialized",
@@ -325,7 +286,7 @@ package body Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last      - Msg_Len + 1 and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt >= Destination'First and Dst_Nxt - 1 <= Destination'Last          and
-                                (for all X in Destination'First .. Dst_Nxt - 1 => Destination (X) in Byte));
+                                (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte));
       end loop;
 
       --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
@@ -381,18 +342,18 @@ package body Crypto.Phelix is
                        Mac  :    out MAC_Stream)
    is
       MAC_WORDS  : constant := MAC_INIT_CNT + MAC_WORD_CNT;
-      Plain_Text : Interfaces.Unsigned_32;
+      Plain_Text : Word_32;
       Mac_Index  : Stream_Index;
       Tmp        : MAC_Stream (0 .. MAC_WORDS * 4 - 1);
       MAC_OFFSET : constant := Tmp'First + MAC_INIT_CNT * 4;
    begin
       Plain_Text := This.CS.Msg_Len mod 4;
       This.CS.Z (0) := This.CS.Z (0) xor MAC_Magic_XOR;
-      This.CS.Z (4) := This.CS.Z (4) xor Interfaces.Unsigned_32 (This.CS.AAD_Len mod 2 ** 32);
-      This.CS.Z (2) := This.CS.Z (2) xor Interfaces.Unsigned_32 (This.CS.AAD_Len / 2 ** 32);
+      This.CS.Z (4) := This.CS.Z (4) xor Word_32 (This.CS.AAD_Len mod 2 ** 32);
+      This.CS.Z (2) := This.CS.Z (2) xor Word_32 (This.CS.AAD_Len / 2 ** 32);
       This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor;         -- do this in case Msh_Len = 0
 
-      for K in Interfaces.Unsigned_32 range 0 .. MAC_WORDS - 1 loop
+      for K in Word_32 range 0 .. MAC_WORDS - 1 loop
          declare
             J : constant Mod_8 := Mod_8 (This.CS.I mod 8);
          begin
@@ -401,13 +362,13 @@ package body Crypto.Phelix is
                Key_Word       => This.KS.X_0 (J));
 
             declare
-               The_Key : constant Interfaces.Unsigned_32 :=
+               The_Key : constant Word_32 :=
                            This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
             begin
                Mac_Index := Tmp'First + Stream_Offset (K) * 4;
                Tmp (Mac_Index .. Mac_Index + 3) :=
                  MAC_Stream (To_Stream (The_Key xor Plain_Text));
-               pragma Assert (for all X in Mac_Index .. Mac_Index + 3 => Tmp (X) in Byte);
+               pragma Assert (for all X of Tmp (Mac_Index .. Mac_Index + 3) => X in Byte);
                pragma Annotate (GNATprove,
                                 False_Positive,
                                 """Tmp"" might not be initialized",
@@ -426,7 +387,7 @@ package body Crypto.Phelix is
          pragma Loop_Invariant ((This.CS.I = This.CS.I'Loop_Entry + K + 1 and
                                  Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
                                  Mac_Index + 3 in Tmp'Range) and then
-                                (for all X in Tmp'First .. Mac_Index + 3 => Tmp (X) in Byte));
+                                (for all X of Tmp (Tmp'First .. Mac_Index + 3) => X in Byte));
       end loop;
 
       --  Copy the relevant bits back to MAC.
@@ -441,40 +402,40 @@ package body Crypto.Phelix is
    --  H
    --
    procedure H (Z              : in out State_Words;
-                Plaintext_Word : in     Interfaces.Unsigned_32;
-                Key_Word       : in     Interfaces.Unsigned_32) is
+                Plaintext_Word : in     Word_32;
+                Key_Word       : in     Word_32) is
    begin
       --  First half.
       Z (0) := Z (0) + (Z (3) xor Plaintext_Word);
-      Z (3) := Interfaces.Rotate_Left (Value => Z (3), Amount => 15);
+      Z (3) := Rotate_Left (Value => Z (3), Amount => 15);
 
       Z (1) := Z (1) + Z (4);
-      Z (4) := Interfaces.Rotate_Left (Value => Z (4), Amount => 25);
+      Z (4) := Rotate_Left (Value => Z (4), Amount => 25);
 
       Z (2) := Z (2) xor Z (0);
-      Z (0) := Interfaces.Rotate_Left (Value => Z (0), Amount => 9);
+      Z (0) := Rotate_Left (Value => Z (0), Amount => 9);
 
       Z (3) := Z (3) xor Z (1);
-      Z (1) := Interfaces.Rotate_Left (Value => Z (1), Amount => 10);
+      Z (1) := Rotate_Left (Value => Z (1), Amount => 10);
 
       Z (4) := Z (4) + Z (2);
-      Z (2) := Interfaces.Rotate_Left (Value => Z (2), Amount => 17);
+      Z (2) := Rotate_Left (Value => Z (2), Amount => 17);
 
       --  Second half.
       Z (0) := Z (0) xor (Z (3) + Key_Word);
-      Z (3) := Interfaces.Rotate_Left (Value => Z (3), Amount => 30);
+      Z (3) := Rotate_Left (Value => Z (3), Amount => 30);
 
       Z (1) := Z (1) xor Z (4);
-      Z (4) := Interfaces.Rotate_Left (Value => Z (4), Amount => 13);
+      Z (4) := Rotate_Left (Value => Z (4), Amount => 13);
 
       Z (2) := Z (2) + Z (0);
-      Z (0) := Interfaces.Rotate_Left (Value => Z (0), Amount => 20);
+      Z (0) := Rotate_Left (Value => Z (0), Amount => 20);
 
       Z (3) := Z (3) + Z (1);
-      Z (1) := Interfaces.Rotate_Left (Value => Z (1), Amount => 11);
+      Z (1) := Rotate_Left (Value => Z (1), Amount => 11);
 
       Z (4) := Z (4) xor Z (2);
-      Z (2) := Interfaces.Rotate_Left (Value => Z (2), Amount => 5);
+      Z (2) := Rotate_Left (Value => Z (2), Amount => 5);
    end H;
 
    --
@@ -616,11 +577,11 @@ package body Crypto.Phelix is
       --  Initialize subkeys and Z values
       for I in Mod_8 range 0 .. 3 loop
          declare
-            N : constant Interfaces.Unsigned_32 :=
+            N : constant Word_32 :=
                   To_Unsigned (Nonce (Nonce'First + Stream_Offset (I) * 4 .. Nonce'First + Stream_Offset (I) * 4 + 3));
          begin
             This.KS.X_1 (I)     := This.KS.X_0 (I + 4) + N;
-            This.KS.X_1 (I + 4) := This.KS.X_0 (I)     + (Interfaces.Unsigned_32 (I) - N);
+            This.KS.X_1 (I + 4) := This.KS.X_0 (I)     + (Word_32 (I) - N);
             This.CS.Z (I)       := This.KS.X_0 (I + 3) xor N;
          end;
       end loop;
@@ -639,7 +600,7 @@ package body Crypto.Phelix is
 
          H (Z              => This.CS.Z,
             Plaintext_Word => 0,
-            Key_Word       => This.KS.X_1 (I) + Interfaces.Unsigned_32 (I));
+            Key_Word       => This.KS.X_1 (I) + Word_32 (I));
 
          This.CS.Old_Z (I mod 4) := This.CS.Z (OLD_Z_REG); --  save the "old" value
       end loop;

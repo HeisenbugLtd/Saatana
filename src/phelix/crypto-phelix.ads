@@ -54,24 +54,19 @@
 --      E-mail Address:                 schneier@counterpane.com
 ------------------------------------------------------------------------------
 
-with Interfaces;
-
 package Crypto.Phelix with
   SPARK_Mode => On,
   Pure       => True
 is
 
-   use type Interfaces.Unsigned_32;
-   use type Interfaces.Unsigned_64;
-
    Max_Nonce_Size : constant := 128;
    Max_MAC_Size   : constant := 128;
    Max_Key_Size   : constant := 256;
 
-   subtype MAC_Size_32 is Interfaces.Unsigned_32 range 0 .. Max_MAC_Size with
+   subtype MAC_Size_32 is Word_32 range 0 .. Max_MAC_Size with
      Dynamic_Predicate => MAC_Size_32 mod 8 = 0;
 
-   subtype Key_Size_32 is Interfaces.Unsigned_32 range 0 .. Max_Key_Size with
+   subtype Key_Size_32 is Word_32 range 0 .. Max_Key_Size with
      Dynamic_Predicate => Key_Size_32 mod 8 = 0;
 
    type Context is private;
@@ -81,7 +76,7 @@ is
      Ghost  => True,
      Global => null;
 
-   function Ctx_I (Ctx : Context) return Interfaces.Unsigned_32 with
+   function Ctx_I (Ctx : Context) return Word_32 with
      Ghost  => True,
      Global => null;
 
@@ -93,7 +88,7 @@ is
      Ghost  => True,
      Global => null;
 
-   function Ctx_Msg_Len (Ctx : Context) return Interfaces.Unsigned_32 with
+   function Ctx_Msg_Len (Ctx : Context) return Word_32 with
      Ghost  => True,
      Global => null;
 
@@ -265,11 +260,11 @@ is
      Pre     => (Source'Length = Destination'Length and then
                  Setup_Nonce_Called (This)          and then
                  Ctx_Msg_Len (This) mod 4 = 0), --  Can only make ONE sub-word call!
-     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                                            and then
-                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)                                        and then
-                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                                      and then
-                 Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
-                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                                    and then
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                             and then
+                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)                         and then
+                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                       and then
+                 Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Word_32 (Source'Length mod 2 ** 32) and then
+                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                     and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
    pragma Annotate (GNATprove,
                     False_Positive,
@@ -297,11 +292,11 @@ is
      Pre     => (Source'Length = Destination'Length and then
                  Setup_Nonce_Called (This)          and then
                  Ctx_Msg_Len (This) mod 4 = 0),
-     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                                            and then
-                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)                                        and then
-                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                                      and then
-                 Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Interfaces.Unsigned_32 (Source'Length mod 2 ** 32) and then
-                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                                    and then
+     Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                             and then
+                 Setup_Nonce_Called (This) = Setup_Nonce_Called (This'Old)                         and then
+                 Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                       and then
+                 Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Word_32 (Source'Length mod 2 ** 32) and then
+                 Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                     and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
    pragma Annotate (GNATprove,
                     False_Positive,
@@ -332,7 +327,7 @@ private
    subtype Full_State_Words is Mod_8 range 0 .. 4; --  5 state words
    subtype Old_State_Words  is Mod_8 range 0 .. 3; --  4 old state words
 
-   type Unsigned_32_Array is array (Mod_8 range <>) of Interfaces.Unsigned_32;
+   type Unsigned_32_Array is array (Mod_8 range <>) of Word_32;
 
    --  Several state arrays (old Z, state words, expanded key.
    subtype Old_Z_4        is Unsigned_32_Array (Old_State_Words);
@@ -340,22 +335,22 @@ private
    subtype Key_Processing is Unsigned_32_Array (Mod_8);
 
    type Key_Schedule is
-      record
-         Key_Size : Key_Size_32;             --  initial key size, in bits
-         MAC_Size : MAC_Size_32;             --  MAC tag size, in bits
-         X_1_Bump : Interfaces.Unsigned_32;  --  4 * (keySize / 8) + 256 * (MAC_Size mod 128)
+      tagged record
+         Key_Size : Key_Size_32;    --  initial key size, in bits
+         MAC_Size : MAC_Size_32;    --  MAC tag size, in bits
+         X_1_Bump : Word_32;        --  4 * (keySize / 8) + 256 * (MAC_Size mod 128)
          X_0      : Key_Processing;
-         X_1      : Key_Processing;          --  processed working key material
+         X_1      : Key_Processing; --  processed working key material
       end record;
 
    type Cipher_State is
-      record
-         Old_Z   : Old_Z_4;                --  Previous four Z_4 values for output
-         Z       : State_Words;            --  5 internal state words (160 bits)
-         AAD_Len : Stream_Count;           --  AAD length
-         I       : Interfaces.Unsigned_32; --  block number (modulo 2 ** 32)
-         Msg_Len : Interfaces.Unsigned_32; --  message length  (modulo 2 ** 32)
-         AAD_Xor : Interfaces.Unsigned_32; --  aadXor constant
+      tagged record
+         Old_Z   : Old_Z_4;      --  Previous four Z_4 values for output
+         Z       : State_Words;  --  5 internal state words (160 bits)
+         AAD_Len : Stream_Count; --  AAD length
+         I       : Word_32;      --  block number (modulo 2 ** 32)
+         Msg_Len : Word_32;      --  message length  (modulo 2 ** 32)
+         AAD_Xor : Word_32;      --  aadXor constant
       end record;
 
    type Context is
@@ -373,10 +368,10 @@ private
    function Ctx_AAD_Len (Ctx : Context) return Stream_Count is
      (Ctx.CS.AAD_Len);
 
-   function Ctx_AAD_Xor (Ctx : Context) return Interfaces.Unsigned_32 is
+   function Ctx_AAD_Xor (Ctx : Context) return Word_32 is
      (Ctx.CS.AAD_Xor);
 
-   function Ctx_I (Ctx : Context) return Interfaces.Unsigned_32 is
+   function Ctx_I (Ctx : Context) return Word_32 is
      (Ctx.CS.I);
 
    function Ctx_Key_Size (Ctx : Context) return Key_Size_32 is
@@ -385,7 +380,7 @@ private
    function Ctx_Mac_Size (Ctx : Context) return MAC_Size_32 is
      (Ctx.KS.MAC_Size);
 
-   function Ctx_Msg_Len (Ctx : Context) return Interfaces.Unsigned_32 is
+   function Ctx_Msg_Len (Ctx : Context) return Word_32 is
      (Ctx.CS.Msg_Len);
 
    function Setup_Key_Called (Ctx : Context) return Boolean is
