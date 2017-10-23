@@ -64,7 +64,11 @@ is
    function To_Stream (Value : in Word_32) return General_Stream with
      Global  => null,
      Depends => (To_Stream'Result => Value),
-     Post    => (To_Stream'Result'Length = 4 and To_Stream'Result'First = 0);
+     Post    => ((To_Stream'Result'Length = 4 and To_Stream'Result'First = 0) and then
+                 To_Stream'Result = (0 => Byte (Shift_Right (Value,  0) mod 256),
+                                     1 => Byte (Shift_Right (Value,  8) mod 256),
+                                     2 => Byte (Shift_Right (Value, 16) mod 256),
+                                     3 => Byte (Shift_Right (Value, 24) mod 256)));
 
    --
    --  To_Unsigned
@@ -74,7 +78,11 @@ is
    --
    function To_Unsigned (Value : in General_Stream) return Word_32 with
      Global  => null,
-     Depends => (To_Unsigned'Result => (Value));
+     Depends => (To_Unsigned'Result => (Value)),
+     Post    => (To_Unsigned'Result = (if Value'Length > 0 then (Shift_Left (Word_32 (Value (Value'First)),      0)) else 0) +
+                                      (if Value'Length > 1 then (Shift_Left (Word_32 (Value (Value'First + 1)),  8)) else 0) +
+                                      (if Value'Length > 2 then (Shift_Left (Word_32 (Value (Value'First + 2)), 16)) else 0) +
+                                      (if Value'Length > 3 then (Shift_Left (Word_32 (Value (Value'First + 3)), 24)) else 0));
 
 private
 
@@ -83,10 +91,10 @@ private
    --
    function To_Stream (Value : in Word_32) return General_Stream is
      (General_Stream'
-       (0 => Byte (Shift_Right (Value,  0) mod 256),
-        1 => Byte (Shift_Right (Value,  8) mod 256),
-        2 => Byte (Shift_Right (Value, 16) mod 256),
-        3 => Byte (Shift_Right (Value, 24) mod 256)));
+       (0 => Byte (Value / 2 **  0 mod 256),
+        1 => Byte (Value / 2 **  8 mod 256),
+        2 => Byte (Value / 2 ** 16 mod 256),
+        3 => Byte (Value / 2 ** 24 mod 256)));
 
    --
    --  To_Unsigned
