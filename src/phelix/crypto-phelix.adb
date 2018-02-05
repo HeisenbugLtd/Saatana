@@ -182,7 +182,7 @@ package body Crypto.Phelix is
                               Increases => Src_Idx,
                               Increases => Dst_Idx,
                               Increases => Dst_Nxt);
-         pragma Loop_Invariant (Src_Idx = Source'Last      - Msg_Len + 1                                  and
+         pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1                                       and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt >= Destination'First and Dst_Nxt - 1 <= Destination'Last          and
                                 (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte));
@@ -395,7 +395,7 @@ package body Crypto.Phelix is
 
       --  We finalized the stream, so the previous Nonce should never be reused.
       --  Ensure at least part of this condition by marking the current Nonce as invalid.
-      This.Nonce_Set := False;
+      This.Setup_Phase := Key_Has_Been_Setup;
    end Finalize;
 
    --
@@ -564,8 +564,7 @@ package body Crypto.Phelix is
       end;
 
       --  Key has been set up. Require a Nonce later.
-      This.Key_Set   := True;
-      This.Nonce_Set := False;
+      This.Setup_Phase := Key_Has_Been_Setup;
    end Setup_Key;
 
    --
@@ -611,7 +610,7 @@ package body Crypto.Phelix is
       This.CS.I := 8;
 
       --  Nonce has been set.
-      This.Nonce_Set := True;
+      This.Setup_Phase := Nonce_Has_Been_Setup;
    end Setup_Nonce;
 
 end Crypto.Phelix;

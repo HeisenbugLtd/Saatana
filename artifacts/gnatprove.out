@@ -1,4 +1,4 @@
-date               : 2017-10-23 14:52:55
+date               : 2018-02-05 12:57:40
 gnatprove version  : 2017 (20170515)
 host               : Windows 32 bits
 command line       : gnatprove.exe --assumptions --output-header -P security.gpr
@@ -8,19 +8,19 @@ gnatprove switches : --mode=all --prover=cvc4,z3,altergo --proof=progressive --s
 Summary of SPARK analysis
 =========================
 
--------------------------------------------------------------------------------------------------------------------------------------
-SPARK Analysis results        Total         Flow   Interval   CodePeer                                 Provers   Justified   Unproved
--------------------------------------------------------------------------------------------------------------------------------------
-Data Dependencies                 .            .          .          .                                       .           .          .
-Flow Dependencies                 .            .          .          .                                       .           .          .
-Initialization                  171          164          .          .                                       .           7          .
-Non-Aliasing                      .            .          .          .                                       .           .          .
-Run-time Checks                 187            .          .          .    187 (CVC4  99%, Z3  1%, altergo  0%)           .          .
-Assertions                       22            .          .          .                  22 (CVC4  98%, Z3  2%)           .          .
-Functional Contracts             21            .          .          .                  21 (CVC4  99%, Z3  1%)           .          .
-LSP Verification                  .            .          .          .                                       .           .          .
--------------------------------------------------------------------------------------------------------------------------------------
-Total                           401    164 (41%)          .          .                               230 (57%)      7 (2%)          .
+-------------------------------------------------------------------------------------------------------------------------
+SPARK Analysis results        Total         Flow   Interval   CodePeer                     Provers   Justified   Unproved
+-------------------------------------------------------------------------------------------------------------------------
+Data Dependencies                 .            .          .          .                           .           .          .
+Flow Dependencies                 .            .          .          .                           .           .          .
+Initialization                  166          159          .          .                           .           7          .
+Non-Aliasing                      .            .          .          .                           .           .          .
+Run-time Checks                 187            .          .          .    187 (CVC4  100%, Z3  0%)           .          .
+Assertions                       22            .          .          .                   22 (CVC4)           .          .
+Functional Contracts             21            .          .          .                   21 (CVC4)           .          .
+LSP Verification                  .            .          .          .                           .           .          .
+-------------------------------------------------------------------------------------------------------------------------
+Total                           396    159 (40%)          .          .                   230 (58%)      7 (2%)          .
 
 
 Analyzed 2 units
@@ -52,7 +52,7 @@ effects on parameters and Global variables of Crypto.To_Unsigned depends on
 absence of run-time errors of Crypto.To_Unsigned depends on
   effects on parameters and Global variables of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Left
-in unit crypto-phelix, 26 subprograms and packages out of 26 analyzed
+in unit crypto-phelix, 25 subprograms and packages out of 25 analyzed
   Crypto.Phelix at crypto-phelix.ads:57 flow analyzed (0 errors and 0 warnings) and proved (1 checks)
 absence of run-time errors of Crypto.Phelix fully established
   Crypto.Phelix.Context at crypto-phelix.ads:72 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
@@ -60,9 +60,6 @@ absence of run-time errors of Crypto.Phelix.Context fully established
   Crypto.Phelix.Ctx_AAD_Len at crypto-phelix.ads:75 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_AAD_Len fully established
 absence of run-time errors of Crypto.Phelix.Ctx_AAD_Len fully established
-  Crypto.Phelix.Ctx_AAD_Xor at crypto-phelix.ads:371 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
-effects on parameters and Global variables of Crypto.Phelix.Ctx_AAD_Xor fully established
-absence of run-time errors of Crypto.Phelix.Ctx_AAD_Xor fully established
   Crypto.Phelix.Ctx_I at crypto-phelix.ads:79 flow analyzed (0 errors and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Crypto.Phelix.Ctx_I fully established
 absence of run-time errors of Crypto.Phelix.Ctx_I fully established

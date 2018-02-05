@@ -92,7 +92,7 @@ is
      Ghost  => True,
      Global => null;
 
-   --  As the order in which calls are made are important, we define some proof
+   --  As the order in which calls are made is important, we define some proof
    --  functions to be used as precondition.
    function Setup_Key_Called (Ctx : Context) return Boolean with
      Ghost  => True,
@@ -353,23 +353,33 @@ private
          AAD_Xor : Word_32;      --  aadXor constant
       end record;
 
+   type Phase is (Uninitialized, Key_Has_Been_Setup, Nonce_Has_Been_Setup);
+   --  Ensure proper call sequence. State changes are:
+   --
+   --     (Uninitialized)
+   --           |
+   --           v
+   --   (Key_Has_Been_Setup) <-.
+   --           |              |
+   --           v              |
+   --  (Nonce_Has_Been_Setup)  |
+   --           |              |
+   --           `--------------'
+
    type Context is
       record
          KS        : Key_Schedule;
          CS        : Cipher_State;
-         --  This state variables are merely here to ensure proper call sequences as precondition.
-         --  Also, they need to be automatically initialized.
-         Key_Set   : Boolean := False;
-         Nonce_Set : Boolean := False;
+         --  This state variable is merely here to ensure proper call sequences
+         --  as precondition.
+         --  Also, we need it to be automatically initialized.
+         Setup_Phase : Phase := Uninitialized;
       end record;
 
    --  Proof functions
 
    function Ctx_AAD_Len (Ctx : Context) return Stream_Count is
      (Ctx.CS.AAD_Len);
-
-   function Ctx_AAD_Xor (Ctx : Context) return Word_32 is
-     (Ctx.CS.AAD_Xor);
 
    function Ctx_I (Ctx : Context) return Word_32 is
      (Ctx.CS.I);
@@ -384,9 +394,9 @@ private
      (Ctx.CS.Msg_Len);
 
    function Setup_Key_Called (Ctx : Context) return Boolean is
-     (Ctx.Key_Set);
+     (Ctx.Setup_Phase in Key_Has_Been_Setup .. Nonce_Has_Been_Setup);
 
    function Setup_Nonce_Called (Ctx : Context) return Boolean is
-     (Ctx.Key_Set and then Ctx.Nonce_Set);
+     (Ctx.Setup_Phase in Nonce_Has_Been_Setup);
 
 end Crypto.Phelix;
