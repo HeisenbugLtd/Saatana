@@ -18,7 +18,6 @@
 
 with Ada.Text_IO;
 with Crypto.Phelix.Test_Vectors;
-with Interfaces;
 
 procedure Test_Phelix with
   SPARK_Mode => Off
@@ -65,7 +64,7 @@ begin
       declare
          use type Crypto.Ciphertext_Stream;
          use type Crypto.Plaintext_Stream;
-         use type Interfaces.Unsigned_32;
+         use type Crypto.Phelix.MAC_Size_32;
 
          Mac_Len : constant Crypto.Phelix.MAC_Size_32 := 8 * T.MAC.all'Length;
          This    :          Crypto.Phelix.Context;
@@ -133,8 +132,6 @@ begin
    end loop;
 
    declare
-      use type Crypto.Nonce_Stream;
-
       KEY_LENGTH   : constant := Crypto.Phelix.Max_Key_Size / 8;
       MAC_LENGTH   : constant := Crypto.Phelix.Max_MAC_Size / 8;
       NONCE_LENGTH : constant := Crypto.Phelix.Max_Nonce_Size / 8;
@@ -148,6 +145,7 @@ begin
       use type Crypto.Byte;
       use type Crypto.Ciphertext_Stream;
       use type Crypto.Key_Stream;
+      use type Crypto.Nonce_Stream;
       use type Crypto.Phelix.MAC_Size_32;
 
       procedure Send_Nonce (Key    : in     Crypto.Key_Stream;
@@ -235,7 +233,7 @@ begin
          --  "Randomly" advance Nonce.
          for J in 1 .. Key (Key'First) loop
             for K in 1 .. Key (Key'First + 1) loop
-               Nonce := Nonce + Key (Key'Last);
+               Nonce := Nonce + Crypto.Nonce_Stream (Key (Key'First .. Key'First + 13) & (14 .. NONCE_LENGTH - 1 => 0));
             end loop;
          end loop;
       end loop;
