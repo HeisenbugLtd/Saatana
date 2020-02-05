@@ -28,8 +28,10 @@ echo TESTSUITE:
 cd _build
 ./test_phelix
 
-if (test -x "`which gnatprove`"); then
-  gnatprove -P security.gpr;
-else
-  echo "gnatprove not installed";
-fi
+echo `which gnatprove`
+
+#if (test -x "`which gnatprove`"); then
+#  gnatprove -P security.gpr;
+#else
+#  echo "gnatprove not installed";
+#fi
