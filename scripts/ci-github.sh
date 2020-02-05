@@ -9,7 +9,7 @@ set -o nounset
 export PATH+=:${PWD}/bin
 
 # Build test_phelix
-gprbuild -j0 -p -P security.gpr
+gprbuild -j0 -p -P security.gpr && gnatprove -P security.gpr
 
 # For the record
 echo ENVIRONMENT:
