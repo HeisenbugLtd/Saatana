@@ -29,5 +29,5 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: gnatprove-${{ matrix.tag }}.out
-          path: _build/gnatprove.out
+          path: _build/gnatprove/gnatprove.out
         continue-on-error: true
