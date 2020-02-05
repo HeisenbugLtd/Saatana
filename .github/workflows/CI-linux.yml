@@ -29,5 +29,5 @@ jobs:
         if: '(test -f _build/gnatprove.out && echo "Prove results found, uploading...") || echo "No prove results found."'
         uses: actions/upload-artifact@master
         with:
-          name: gnatprove-out-${{ matrix.tag }}.zip
+          name: gnatprove-${{ matrix.tag }}.out
           path: _build/gnatprove.out
