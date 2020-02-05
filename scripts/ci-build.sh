@@ -21,6 +21,3 @@ echo ............................
 #echo ALR VERSION:
 #alr version
 #echo ............................
-
-echo TESTSUITE:
-./_build/test_phelix
