@@ -6,8 +6,6 @@ trap 'echo "Interrupted" >&2 ; exit 1' INT
 set -o errexit
 set -o nounset
 
-#export PATH+=:${PWD}/bin
-
 # Build test_phelix
 gprbuild -j0 -p -P security.gpr && gnatprove -P security.gpr
 
@@ -26,11 +24,3 @@ echo ............................
 
 echo TESTSUITE:
 ./_build/test_phelix
-
-#echo `which gnatprove`
-
-#if (test -x "`which gnatprove`"); then
-#  gnat prove -P security.gpr;
-#else
-#  echo "gnatprove not installed";
-#fi
