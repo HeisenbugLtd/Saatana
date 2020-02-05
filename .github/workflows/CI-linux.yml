@@ -26,7 +26,7 @@ jobs:
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} bash scripts/ci-github.sh
       - name: Upload provelogs
-        if: ${GNATPROVE}=="success"
+        if: (${GNATPROVE}=="success")
         uses: actions/upload-artifact@master
         with:
           name: gnatprove-${{ matrix.tag }}.out
