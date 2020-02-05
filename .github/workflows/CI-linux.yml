@@ -36,7 +36,7 @@ jobs:
           name: gnatprove-${{ matrix.tag }}.out
           path: _build/gnatprove/gnatprove.out
         continue-on-error: true
-      - name: Test
+      - name: Known Answers Test
         run: >
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
