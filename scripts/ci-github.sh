@@ -25,4 +25,4 @@ echo ............................
 echo TESTSUITE:
 ./_build/test_phelix
 
-which gnatprove && gnatprove -P security.gpr
+(which gnatprove && gnatprove -P security.gpr) || true
