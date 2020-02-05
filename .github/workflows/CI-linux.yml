@@ -1,0 +1,33 @@
+name: CI Linux
+
+on: [push]
+
+strategy:
+  matrix:
+    tag: # Those are alire's dockerhub alire/gnat:tag machines
+      - centos-latest-community-2019
+      - community-current
+      - debian-stable
+      - ubuntu-lts
+
+jobs:
+  build:
+    name: CI on ${{ matrix.tag }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Pull docker image
+        run: docker pull alire/gnat:${{ matrix.tag }}
+      - name: Run test script
+        run: >
+          docker run -v${PWD}:/security -w /security
+          -e "BRANCH=${{ github.base_ref }}"
+          alire/gnat:${{ matrix.tag }} _build/phelix_test
+      - name: Upload logs (if failed)
+        if: failure()
+        uses: actions/upload-artifact@master
+        with:
+          name: e3-log-${{ matrix.tag }}.zip
+          path: testsuite/out
