@@ -32,4 +32,5 @@ SPARKDIR=/opt/gnat/libexec/spark/bin
 (test -x ${SPARKDIR}/alt-ergo && echo `${SPARKDIR}/alt-ergo -version`) || true
 (test -x ${SPARKDIR}/cvc4 && echo `${SPARKDIR}/cvc4 --version`) || true
 (test -x ${SPARKDIR}/z3 && echo `${SPARKDIR}/z3 -version`) || true
-#(which gnatprove && gnatprove -P security.gpr) || true
+
+(which gnatprove && gnatprove -P security.gpr) || true
