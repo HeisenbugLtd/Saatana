@@ -2,18 +2,18 @@ name: CI Linux
 
 on: [push]
 
-strategy:
-  matrix:
-    tag: # Those are alire's dockerhub alire/gnat:tag machines
-      - centos-latest-community-2019
-      - community-current
-      - debian-stable
-      - ubuntu-lts
-
 jobs:
   build:
     name: CI on ${{ matrix.tag }}
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        tag: # Those are alire's dockerhub alire/gnat:tag machines
+          - centos-latest-community-2019
+          - community-current
+          - debian-stable
+          - ubuntu-lts
 
     steps:
       - name: Check out repository
