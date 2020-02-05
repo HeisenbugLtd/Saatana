@@ -20,11 +20,16 @@ jobs:
         uses: actions/checkout@v2
       - name: Pull docker image
         run: docker pull alire/gnat:${{ matrix.tag }}
-      - name: Run test script
+      - name: Build and Test
         run: >
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
-          alire/gnat:${{ matrix.tag }} bash scripts/ci-github.sh
+          alire/gnat:${{ matrix.tag }} bash scripts/ci-build.sh
+      - name: Proof
+        run: >
+          docker run -v${PWD}:/security -w /security
+          -e "BRANCH=${{ github.base_ref }}"
+          alire/gnat:${{ matrix.tag }} bash scripts/run-provers.sh
       - name: Upload provelogs
         uses: actions/upload-artifact@master
         with:
