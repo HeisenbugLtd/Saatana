@@ -25,3 +25,8 @@ jobs:
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} bash scripts/ci-github.sh
+      - name: Upload provelogs
+        uses: actions/upload-artifact@master
+        with:
+          name: gnatprove-out-${{ matrix.tag }}.zip
+          path: _build/gnatprove.out
