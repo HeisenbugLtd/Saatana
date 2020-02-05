@@ -22,6 +22,6 @@ jobs:
         run: docker pull alire/gnat:${{ matrix.tag }}
       - name: Run test script
         run: >
-          docker run -v${PWD}:/alire -w /alire
+          docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} scripts/ci-github.sh
