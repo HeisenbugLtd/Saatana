@@ -25,7 +25,7 @@ echo ............................
 echo TESTSUITE:
 ./_build/test_phelix
 
-if (test -x `which gnatprove'); then
+if (test -x `which gnatprove`); then
   gnatprove -P security.gpr;
 else
   echo "gnatprove not found.";
