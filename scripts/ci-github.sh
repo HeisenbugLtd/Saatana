@@ -25,4 +25,9 @@ echo ............................
 echo TESTSUITE:
 ./_build/test_phelix
 
-(which gnatprove && gnatprove -P security.gpr) || true
+echo "Checking provers..."
+
+(which altergo && echo `altergo --version`) || true
+(which cvc4 && echo `cvc4 --version`) || true
+(which z3 && echo `z3 --version`) || true
+#(which gnatprove && gnatprove -P security.gpr) || true
