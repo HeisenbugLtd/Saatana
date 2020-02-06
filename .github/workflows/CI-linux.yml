@@ -38,6 +38,12 @@ jobs:
         with:
           name: gnatprove-${{ matrix.tag }}.out
           path: _build/gnatprove/gnatprove.out
+      - name: Upload gnatprove stdout
+        if: matrix.tag == 'community-current'
+        uses: actions/upload-artifact@master
+        with:
+          name: gnatprove-${{ matrix.tag }}.stdout
+          path: _build/gnatprove/gnatprove.stdout
       - name: Known Answers Test
         run: >
           docker run -v${PWD}:/security -w /security
