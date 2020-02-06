@@ -309,10 +309,6 @@ package body Crypto.Phelix is
       Process_AAD (This => This,
                    Aad  => Header);
       Packet (Packet'First .. Packet'First + Header'Length - 1) := Ciphertext_Stream (Header);
-      pragma Annotate (GNATprove,
-                       Intentional,
-                       """Packet"" might not be initialized",
-                       "Full assignment is split between Msg_Header, and Msg_Body in Encrypt_Bytes.");
 
       Encrypt_Bytes (This        => This,
                      Source      => Payload,
