@@ -7,4 +7,9 @@ set -o errexit
 set -o nounset
 
 echo "Running KAT:"
-./_build/test_phelix
+# Pipe KAT output into file
+./_build/test_phelix | tee kat.out
+
+# The test program outputs either <OK> or <FAILED> at the end.
+# Use exit status of grep to see if the output contains the expected <OK>
+grep "<OK>" kat.out > /dev/null
