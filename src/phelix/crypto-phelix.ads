@@ -136,6 +136,10 @@ is
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
                  not Setup_Nonce_Called (This));
+   pragma Annotate (GNATprove,
+                    Intentional,
+                    """Packet"" might not be initialized",
+                    "Full assignment is split between Msg_Header, and Msg_Body in Encrypt_Bytes.");
 
    --
    --  Decrypt_Packet
