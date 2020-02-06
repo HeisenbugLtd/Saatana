@@ -26,7 +26,7 @@ project Security is
    end Linker;
 
    package Prove is
-      for Switches use ("--mode=all", "--prover=cvc4,z3,altergo", "--proof=progressive", "--steps=131072", "-j3");
+      for Switches use ("--mode=all", "--prover=cvc4,z3,altergo", "--proof=progressive", "--steps=131072", "-j0");
    end Prove;
 
    package Check is
