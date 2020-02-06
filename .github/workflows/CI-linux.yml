@@ -25,44 +25,17 @@ jobs:
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} bash scripts/ci-build.sh
-
-  proof:
-    name: Proof on ${{ matrix.tag }}
-    needs: build
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        tag: # Only community-current has SPARK included, so skip the others
-          - community-current
-
-    steps:
       - name: Proof
         run: >
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} bash scripts/ci-proof.sh
-      - name: Upload prove logs
+      - name: Upload provelogs
         uses: actions/upload-artifact@master
         with:
           name: gnatprove-${{ matrix.tag }}.out
           path: _build/gnatprove/gnatprove.out
         continue-on-error: true
-
-  KAT:
-    name: Known Answers Test on ${{ matrix.tag }}
-    needs: build
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        tag: # Those are alire's dockerhub alire/gnat:tag machines
-          - centos-latest-community-2019
-          - community-current
-          - debian-stable
-          - ubuntu-lts
-
-    steps:
       - name: Known Answers Test
         run: >
           docker run -v${PWD}:/security -w /security
