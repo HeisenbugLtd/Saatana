@@ -53,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: kat-${{ matrix.tag }}.out
-          path: _build/kat.out
+          path: kat.out
