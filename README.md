@@ -1,8 +1,8 @@
 # security
 A cryptographic framework, proven for correctness in SPARK
 
-![](https://github.com/HeisenbugLtd/security/workflows/Build%20Linux/badge.svg)
-![](https://github.com/HeisenbugLtd/security/workflows/Proof%20Linux/badge.svg)
+[![](https://github.com/HeisenbugLtd/security/workflows/Build%20Linux/badge.svg)](https://github.com/HeisenbugLtd/security/actions?query=event%3Apush)
+[![](https://github.com/HeisenbugLtd/security/workflows/Proof%20Linux/badge.svg)](https://github.com/HeisenbugLtd/security/actions?query=event%3Aschedule)
 
 Algorithms contained
 - [Phelix](https://www.schneier.com/academic/archives/2005/01/phelix.html) - Fast Encryption and Authentication in a Single Cryptographic Primitive
