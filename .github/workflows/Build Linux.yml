@@ -1,4 +1,4 @@
-name: Build and Test on Linux
+name: Build Linux
 
 on: [push]
 
