@@ -2,8 +2,8 @@ name: Proof Linux
 
 on:
   schedule:
-    # hourly seems a bit overkill, but we need to test it...
-    - cron: '0,15,30,45 * * * *'
+    # Run twice daily
+    - cron: '42 0,12 * * *'
 
 jobs:
   build:
