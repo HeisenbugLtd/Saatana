@@ -7,7 +7,7 @@ A cryptographic framework, proven for correctness in SPARK
 Algorithms contained
 - [Phelix](https://www.schneier.com/academic/archives/2005/01/phelix.html) - Fast Encryption and Authentication in a Single Cryptographic Primitive
 
-  D. Whiting, B. Schneier, S. Lucks, and F. Muller
+  Doug Whiting, Bruce Schneier, Stefan Lucks, and Frédéric Muller
 
   ECRYPT Stream Cipher Project Report 2005/027, 2005.
 
