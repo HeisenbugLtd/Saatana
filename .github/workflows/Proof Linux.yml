@@ -2,13 +2,13 @@ name: Proof on Linux
 
 on:
   schedule:
-    -cron: '0 * * * *' # hourly seems a bit overkill, but we need to test it...
+    # hourly seems a bit overkill, but we need to test it...
+    - cron: '0 * * * *'
 
 jobs:
   build:
     name: Proof on ${{ matrix.tag }}
     runs-on: ubuntu-latest
-    needs: 'Build on Linux'
 
     strategy:
       matrix:
