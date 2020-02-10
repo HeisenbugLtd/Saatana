@@ -1,0 +1,37 @@
+name: Build Linux
+
+on: [push]
+
+jobs:
+  build:
+    name: CI on ${{ matrix.tag }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        tag: # Those are alire's dockerhub alire/gnat:tag machines
+          - centos-latest-community-2019
+          - community-current
+          - debian-stable
+          - ubuntu-lts
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Pull docker image
+        run: docker pull alire/gnat:${{ matrix.tag }}
+      - name: Build
+        run: >
+          docker run -v${PWD}:/security -w /security
+          -e "BRANCH=${{ github.base_ref }}"
+          alire/gnat:${{ matrix.tag }} bash scripts/ci-build.sh
+      - name: Known Answers Test
+        run: >
+          docker run -v${PWD}:/security -w /security
+          -e "BRANCH=${{ github.base_ref }}"
+          alire/gnat:${{ matrix.tag }} bash scripts/ci-test.sh
+      - name: Upload KAT results
+        uses: actions/upload-artifact@master
+        with:
+          name: kat-${{ matrix.tag }}.out
+          path: kat.out

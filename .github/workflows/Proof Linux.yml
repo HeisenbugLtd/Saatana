@@ -1,19 +1,20 @@
-name: CI Linux
+name: Proof Linux
 
-on: [push]
+on:
+  schedule:
+    # hourly seems a bit overkill, but we need to test it...
+    - cron: '0,15,30,45 * * * *'
 
 jobs:
   build:
-    name: CI on ${{ matrix.tag }}
+    name: Proof on ${{ matrix.tag }}
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         tag: # Those are alire's dockerhub alire/gnat:tag machines
-          - centos-latest-community-2019
           - community-current
-          - debian-stable
-          - ubuntu-lts
+        # SPARK is only available on community installation
 
     steps:
       - name: Check out repository
@@ -26,20 +27,16 @@ jobs:
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} bash scripts/ci-build.sh
       - name: Proof
-        if: matrix.tag == 'community-current'
-        # SPARK is only available on community installation
         run: >
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} bash scripts/ci-proof.sh
       - name: Upload provelogs
-        if: matrix.tag == 'community-current'
         uses: actions/upload-artifact@master
         with:
           name: gnatprove-${{ matrix.tag }}.out
           path: _build/gnatprove/gnatprove.out
       - name: Upload gnatprove stdout
-        if: matrix.tag == 'community-current'
         uses: actions/upload-artifact@master
         with:
           name: gnatprove-${{ matrix.tag }}.stdout
