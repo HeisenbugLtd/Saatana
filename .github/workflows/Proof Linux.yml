@@ -1,9 +1,9 @@
-name: Proof on Linux
+name: Proof Linux
 
 on:
   schedule:
     # hourly seems a bit overkill, but we need to test it...
-    - cron: '0 * * * *'
+    - cron: '0,15,30,45 * * * *'
 
 jobs:
   build:
