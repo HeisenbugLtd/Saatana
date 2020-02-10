@@ -1,4 +1,6 @@
-# security ![](https://github.com/HeisenbugLtd/security/workflows/CI%20Linux/badge.svg)
+# security
+![](https://github.com/HeisenbugLtd/security/workflows/Build%20Linux/badge.svg)
+![](https://github.com/HeisenbugLtd/security/workflows/Proof%20Linux/badge.svg)
 A cryptographic framework, proven for correctness in SPARK
 
 
