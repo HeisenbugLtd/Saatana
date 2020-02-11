@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---  Source code copyright (C) 2017 by Heisenbug Ltd.                        --
+--  Source code copyright (C) 2017-2020 by Heisenbug Ltd.                   --
 --                                                                          --
 --  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE                             --
 --                      Version 2, December 2004                            --
@@ -16,7 +16,7 @@
 --    0. You just DO WHAT THE FUCK YOU WANT TO.                             --
 ------------------------------------------------------------------------------
 
-package body Crypto.Stream_Tools with
+package body Saatana.Crypto.Stream_Tools with
   SPARK_Mode => Off
 is
 
@@ -60,4 +60,4 @@ is
       return new Plaintext_Stream'(Plaintext_Stream (General_Stream'(To_Stream (Value))));
    end To_Stream;
 
-end Crypto.Stream_Tools;
+end Saatana.Crypto.Stream_Tools;

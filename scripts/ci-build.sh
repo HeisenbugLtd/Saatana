@@ -7,7 +7,7 @@ set -o errexit
 set -o nounset
 
 # Build test_phelix
-gprbuild -j0 -p -P security.gpr
+gprbuild -j0 -p -P saatana.gpr
 
 # For the record
 echo ENVIRONMENT:

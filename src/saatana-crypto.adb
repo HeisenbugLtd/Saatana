@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---  Source code copyright (C) 2017 by Heisenbug Ltd.                        --
+--  Source code copyright (C) 2017-2020 by Heisenbug Ltd.                   --
 --                                                                          --
 --  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE                             --
 --                      Version 2, December 2004                            --
@@ -16,7 +16,7 @@
 --    0. You just DO WHAT THE FUCK YOU WANT TO.                             --
 ------------------------------------------------------------------------------
 
-package body Crypto is
+package body Saatana.Crypto is
 
    --
    --  "+"
@@ -64,4 +64,4 @@ package body Crypto is
       return Result;
    end "+";
 
-end Crypto;
+end Saatana.Crypto;

@@ -1,4 +1,4 @@
-project Security is
+project Saatana is
 
    for Source_Dirs use ("src/phelix", "src", "tests/phelix", "tests");
    for Main use ("test_phelix.adb");
@@ -33,4 +33,4 @@ project Security is
       for Default_Switches ("ada") use ("-rules", "-from=rules/coding-standards.txt");
    end Check;
 
-end Security;
+end Saatana;

@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---  Source code copyright (C) 2017 by Heisenbug Ltd.                        --
+--  Source code copyright (C) 2017-2020 by Heisenbug Ltd.                   --
 --                                                                          --
 --  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE                             --
 --                      Version 2, December 2004                            --
@@ -54,7 +54,7 @@
 --      E-mail Address:                 schneier@counterpane.com
 ------------------------------------------------------------------------------
 
-package Crypto.Phelix with
+package Saatana.Crypto.Phelix with
   SPARK_Mode => On,
   Pure       => True
 is
@@ -407,4 +407,4 @@ private
    function Setup_Nonce_Called (Ctx : Context) return Boolean is
      (Ctx.Setup_Phase in Nonce_Has_Been_Setup);
 
-end Crypto.Phelix;
+end Saatana.Crypto.Phelix;

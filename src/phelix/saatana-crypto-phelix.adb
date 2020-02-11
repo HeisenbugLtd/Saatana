@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---  Source code copyright (C) 2017 by Heisenbug Ltd.                        --
+--  Source code copyright (C) 2017-2020 by Heisenbug Ltd.                   --
 --                                                                          --
 --  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE                             --
 --                      Version 2, December 2004                            --
@@ -16,7 +16,7 @@
 --    0. You just DO WHAT THE FUCK YOU WANT TO.                             --
 ------------------------------------------------------------------------------
 
-package body Crypto.Phelix is
+package body Saatana.Crypto.Phelix is
 
    --
    --  Exclusive_Or
@@ -605,4 +605,4 @@ package body Crypto.Phelix is
       This.Setup_Phase := Nonce_Has_Been_Setup;
    end Setup_Nonce;
 
-end Crypto.Phelix;
+end Saatana.Crypto.Phelix;

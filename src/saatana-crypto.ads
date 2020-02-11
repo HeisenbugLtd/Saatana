@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---  Source code copyright (C) 2017 by Heisenbug Ltd.                        --
+--  Source code copyright (C) 2017-2020 by Heisenbug Ltd.                   --
 --                                                                          --
 --  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE                             --
 --                      Version 2, December 2004                            --
@@ -26,7 +26,7 @@
 
 with Interfaces;
 
-package Crypto with
+package Saatana.Crypto with
   Pure       => True,
   SPARK_Mode => On
 is
@@ -108,4 +108,4 @@ private
       (if Value'Length > 2 then Word_32 (Value (Value'First + 2)) * 2 ** 16 else 0) +
       (if Value'Length > 3 then Word_32 (Value (Value'First + 3)) * 2 ** 24 else 0));
 
-end Crypto;
+end Saatana.Crypto;

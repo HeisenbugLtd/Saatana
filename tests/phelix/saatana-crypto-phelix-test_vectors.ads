@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---  Source code copyright (C) 2017 by Heisenbug Ltd.                        --
+--  Source code copyright (C) 2017-2020 by Heisenbug Ltd.                   --
 --                                                                          --
 --  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE                             --
 --                      Version 2, December 2004                            --
@@ -16,9 +16,9 @@
 --    0. You just DO WHAT THE FUCK YOU WANT TO.                             --
 ------------------------------------------------------------------------------
 
-with Crypto.Stream_Tools;
+with Saatana.Crypto.Stream_Tools;
 
-package Crypto.Phelix.Test_Vectors with
+package Saatana.Crypto.Phelix.Test_Vectors with
   SPARK_Mode => Off
 is
    type Test_Vector is
@@ -2154,4 +2154,4 @@ is
         --  MAC: 60 A2 31 C1 C9 F5 E4 EF 40 AA 0A 1C
 );
 
-end Crypto.Phelix.Test_Vectors;
+end Saatana.Crypto.Phelix.Test_Vectors;
