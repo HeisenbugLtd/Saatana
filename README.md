@@ -1,4 +1,6 @@
-# Saatana - SPARK/Ada Algorithms Targeting Advanced Network Applications
+![](assets/img/logo.png)
+
+# SPARK/Ada Algorithms Targeting Advanced Network Applications
 A cryptographic framework, proven for correctness in SPARK
 
 [![](https://github.com/HeisenbugLtd/Saatana/workflows/Build%20Linux/badge.svg)](https://github.com/HeisenbugLtd/Saatana/actions?query=event%3Apush)
