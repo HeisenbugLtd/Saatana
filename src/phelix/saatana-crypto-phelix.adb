@@ -100,11 +100,12 @@ package body Saatana.Crypto.Phelix is
                               ((Rotate_Left (Z'Old (3), 15) xor (Z'Old (1) + Z'Old (4))) +
                                Key_Word))))));
 
-   MASK : constant array (Stream_Count range 1 .. 4) of Word_32 :=
-            (16#00_00_00_FF#,
-             16#00_00_FF_FF#,
-             16#00_FF_FF_FF#,
-             16#FF_FF_FF_FF#);
+   type End_Of_Stream_Mask is array (Stream_Count range 1 .. 4) of Word_32;
+
+   MASK : constant End_Of_Stream_Mask := (16#00_00_00_FF#,
+                                          16#00_00_FF_FF#,
+                                          16#00_FF_FF_FF#,
+                                          16#FF_FF_FF_FF#);
 
    --
    --  Decrypt_Bytes
@@ -129,6 +130,7 @@ package body Saatana.Crypto.Phelix is
       This.CS.AAD_Xor := 0; --  Next time, the xor will be a nop
 
       while Msg_Len > 0 loop
+         Decrypt_Word :
          declare
             Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
          begin
@@ -165,7 +167,7 @@ package body Saatana.Crypto.Phelix is
             This.CS.I := This.CS.I + 1;
             Src_Idx   := Src_Idx + Remaining_Bytes;
             Dst_Idx   := Dst_Nxt;
-         end;
+         end Decrypt_Word;
 
          pragma Loop_Variant (Decreases => Msg_Len,
                               Increases => This.CS.I,
@@ -232,6 +234,7 @@ package body Saatana.Crypto.Phelix is
       This.CS.AAD_Xor := 0; --  Next time, the xor will be a nop
 
       while Msg_Len > 0 loop
+         Encrypt_Word :
          declare
             Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
          begin
@@ -263,7 +266,7 @@ package body Saatana.Crypto.Phelix is
             This.CS.I := This.CS.I + 1;
             Src_Idx  := Src_Idx + Remaining_Bytes;
             Dst_Idx  := Dst_Nxt;
-         end;
+         end Encrypt_Word;
 
          pragma Loop_Variant (Decreases => Msg_Len,
                               Increases => This.CS.I,
@@ -334,9 +337,10 @@ package body Saatana.Crypto.Phelix is
       This.CS.Z (0) := This.CS.Z (0) xor MAC_Magic_XOR;
       This.CS.Z (4) := This.CS.Z (4) xor Word_32 (This.CS.AAD_Len mod 2 ** 32);
       This.CS.Z (2) := This.CS.Z (2) xor Word_32 (This.CS.AAD_Len / 2 ** 32);
-      This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor;         -- do this in case Msh_Len = 0
+      This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor;         -- do this in case Msg_Len = 0
 
       for K in Word_32 range 0 .. MAC_WORDS - 1 loop
+         Calculate_MAC_Word :
          declare
             J : constant Mod_8 := Mod_8 (This.CS.I mod 8);
          begin
@@ -344,6 +348,7 @@ package body Saatana.Crypto.Phelix is
                Plaintext_Word => 0,
                Key_Word       => This.KS.X_0 (J));
 
+            Store_MAC_Word :
             declare
                The_Key : constant Word_32 :=
                            This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
@@ -356,14 +361,14 @@ package body Saatana.Crypto.Phelix is
                                 False_Positive,
                                 """Tmp"" might not be initialized",
                                 """Tmp"" is initialized, there's an explicit assignment above");
-            end;
+            end Store_MAC_Word;
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
                Key_Word       => This.KS.X_1 (J) + This.CS.I);
             This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); -- save the "old" value
             This.CS.I := This.CS.I + 1;
-         end;
+         end Calculate_MAC_Word;
 
          pragma Loop_Variant (Increases => K,
                               Increases => This.CS.I);
@@ -435,6 +440,7 @@ package body Saatana.Crypto.Phelix is
       This.CS.AAD_Len := This.CS.AAD_Len + Aad'Length;
 
       while Aad_Len > 0 loop
+         Process_AAD_Word :
          declare
             Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Aad_Len, 4);
             J               : constant Mod_8 := Mod_8 (This.CS.I mod 8);
@@ -453,7 +459,7 @@ package body Saatana.Crypto.Phelix is
 
             This.CS.I := This.CS.I + 1;
             Src_Idx := Src_Idx + Remaining_Bytes;
-         end;
+         end Process_AAD_Word;
 
          pragma Loop_Variant (Decreases => Aad_Len,
                               Increases => Src_Idx,
@@ -496,6 +502,7 @@ package body Saatana.Crypto.Phelix is
 
       if Key'Length /= 0 then
          for I in This.KS.X_0'Range loop
+            Process_Key_Schedule_Word :
             declare
                Subkey_First : constant Stream_Offset :=
                                 Stream_Offset'Min (Key'First + Stream_Offset (I - This.KS.X_0'First) * 4, Key'Last + 1);
@@ -509,15 +516,17 @@ package body Saatana.Crypto.Phelix is
                       To_Unsigned (Key (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 ..
                                         Stream_Index'Min (Key'First + Stream_Offset (S - This.KS.X_0'First) * 4 + 3,
                                                           Key'Last))));
-            end;
+            end Process_Key_Schedule_Word;
          end loop;
       end if;
 
       --  Now process the padded "raw" key, using a Feistel network
+      Process_Raw_Key :
       declare
          Z : State_Words;
       begin
          for I in Mod_8'Range loop
+            Process_Key_Word :
             declare
                K : Mod_8;
             begin
@@ -542,9 +551,9 @@ package body Saatana.Crypto.Phelix is
 
                Exclusive_Or (Argument => This.KS.X_0 (K .. K + 3),
                              Xor_With => Z (0 .. 3));
-            end;
+            end Process_Key_Word;
          end loop;
-      end;
+      end Process_Raw_Key;
 
       --  Key has been set up. Require a Nonce later.
       This.Setup_Phase := Key_Has_Been_Setup;
@@ -558,6 +567,7 @@ package body Saatana.Crypto.Phelix is
    begin
       --  Initialize subkeys and Z values
       for I in Mod_8 range 0 .. 3 loop
+         Init_Subkey_Word :
          declare
             N : constant Word_32 :=
                   To_Unsigned (Nonce (Nonce'First + Stream_Offset (I) * 4 .. Nonce'First + Stream_Offset (I) * 4 + 3));
@@ -565,7 +575,7 @@ package body Saatana.Crypto.Phelix is
             This.KS.X_1 (I)     := This.KS.X_0 (I + 4) + N;
             This.KS.X_1 (I + 4) := This.KS.X_0 (I)     + (Word_32 (I) - N);
             This.CS.Z (I)       := This.KS.X_0 (I + 3) xor N;
-         end;
+         end Init_Subkey_Word;
       end loop;
 
       This.KS.X_1 (1) := This.KS.X_1 (1) + This.KS.X_1_Bump;  -- X' adjustment for i = 1 mod 4

@@ -63,33 +63,33 @@ is
    type Context is private;
 
    --  Proof functions.
-   function Ctx_AAD_Len (Ctx : Context) return Stream_Count with
+   function Ctx_AAD_Len (Ctx : in Context) return Stream_Count with
      Ghost  => True,
      Global => null;
 
-   function Ctx_I (Ctx : Context) return Word_32 with
+   function Ctx_I (Ctx : in Context) return Word_32 with
      Ghost  => True,
      Global => null;
 
-   function Ctx_Key_Size (Ctx : Context) return Key_Size_32 with
+   function Ctx_Key_Size (Ctx : in Context) return Key_Size_32 with
      Ghost  => True,
      Global => null;
 
-   function Ctx_Mac_Size (Ctx : Context) return MAC_Size_32 with
+   function Ctx_Mac_Size (Ctx : in Context) return MAC_Size_32 with
      Ghost  => True,
      Global => null;
 
-   function Ctx_Msg_Len (Ctx : Context) return Word_32 with
+   function Ctx_Msg_Len (Ctx : in Context) return Word_32 with
      Ghost  => True,
      Global => null;
 
    --  As the order in which calls are made is important, we define some proof
    --  functions to be used as precondition.
-   function Setup_Key_Called (Ctx : Context) return Boolean with
+   function Setup_Key_Called (Ctx : in Context) return Boolean with
      Ghost  => True,
      Global => null;
 
-   function Setup_Nonce_Called (Ctx : Context) return Boolean with
+   function Setup_Nonce_Called (Ctx : in Context) return Boolean with
      Ghost  => True,
      Global => null;
 
@@ -377,25 +377,25 @@ private
 
    --  Proof functions
 
-   function Ctx_AAD_Len (Ctx : Context) return Stream_Count is
+   function Ctx_AAD_Len (Ctx : in Context) return Stream_Count is
      (Ctx.CS.AAD_Len);
 
-   function Ctx_I (Ctx : Context) return Word_32 is
+   function Ctx_I (Ctx : in Context) return Word_32 is
      (Ctx.CS.I);
 
-   function Ctx_Key_Size (Ctx : Context) return Key_Size_32 is
+   function Ctx_Key_Size (Ctx : in Context) return Key_Size_32 is
      (Ctx.KS.Key_Size);
 
-   function Ctx_Mac_Size (Ctx : Context) return MAC_Size_32 is
+   function Ctx_Mac_Size (Ctx : in Context) return MAC_Size_32 is
      (Ctx.KS.MAC_Size);
 
-   function Ctx_Msg_Len (Ctx : Context) return Word_32 is
+   function Ctx_Msg_Len (Ctx : in Context) return Word_32 is
      (Ctx.CS.Msg_Len);
 
-   function Setup_Key_Called (Ctx : Context) return Boolean is
+   function Setup_Key_Called (Ctx : in Context) return Boolean is
      (Ctx.Setup_Phase in Key_Has_Been_Setup .. Nonce_Has_Been_Setup);
 
-   function Setup_Nonce_Called (Ctx : Context) return Boolean is
+   function Setup_Nonce_Called (Ctx : in Context) return Boolean is
      (Ctx.Setup_Phase in Nonce_Has_Been_Setup);
 
 end Saatana.Crypto.Phelix;

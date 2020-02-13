@@ -43,13 +43,14 @@ package body Saatana.Crypto is
       Carry  : Boolean      := False;
    begin
       for Result_Idx in Result'Range loop
+         Add_Byte_With_Carry :
          declare
             Operand_Idx : constant Stream_Index := Result_Idx - Result'First + Right'First;
          begin
             Add_Carry (Left   => Result (Result_Idx),
                        Right  => Right (Operand_Idx),
                        Carry  => Carry);
-         end;
+         end Add_Byte_With_Carry;
       end loop;
 
       return Result;
