@@ -36,8 +36,9 @@ is
    function Image (S : in Saatana.Crypto.General_Stream) return String;
    function Image (S : in Saatana.Crypto.General_Stream) return String
    is
+      type Character_Lookup is array (Saatana.Crypto.Byte range <>) of Character;
       Result   : String (1 .. S'Length * 2);
-      Hex_Char : constant array (Saatana.Crypto.Byte range 0 .. 15) of Character := "0123456789ABCDEF";
+      Hex_Char : constant Character_Lookup (0 .. 15) := "0123456789ABCDEF";
       use type Saatana.Crypto.Byte;
    begin
       for I in S'Range loop
@@ -51,7 +52,9 @@ is
 begin
    Ada.Text_IO.Put_Line ("Running Phelix tests...");
 
+   KAT_Loop :
    for T of Saatana.Crypto.Phelix.Test_Vectors.KAT loop
+      Test_Encrypt_Decrypt :
       declare
          use type Saatana.Crypto.Ciphertext_Stream;
          use type Saatana.Crypto.Plaintext_Stream;
@@ -61,67 +64,70 @@ begin
          This    :          Saatana.Crypto.Phelix.Context;
       begin
          Saatana.Crypto.Phelix.Setup_Key (This     => This,
-                                  Key      => T.Key.all,
-                                  Mac_Size => Mac_Len);
+                                          Key      => T.Key.all,
+                                          Mac_Size => Mac_Len);
 
+         Test_Encrypt_Decrypt_Bytes :
          declare
             Result_Cipher    : Saatana.Crypto.Ciphertext_Stream (T.Plaintext.all'Range);
             Result_Plaintext : Saatana.Crypto.Plaintext_Stream (T.Plaintext.all'Range);
             Result_MAC       : Saatana.Crypto.MAC_Stream (0 .. Saatana.Crypto.Stream_Offset (Mac_Len) / 8  - 1);
          begin
             Saatana.Crypto.Phelix.Setup_Nonce (This  => This,
-                                       Nonce => T.Nonce.all);
+                                               Nonce => T.Nonce.all);
             Saatana.Crypto.Phelix.Process_AAD (This => This,
-                                       Aad  => T.Aad.all);
+                                               Aad  => T.Aad.all);
             Saatana.Crypto.Phelix.Encrypt_Bytes (This        => This,
-                                         Source      => T.Plaintext.all,
-                                         Destination => Result_Cipher);
+                                                 Source      => T.Plaintext.all,
+                                                 Destination => Result_Cipher);
             Saatana.Crypto.Phelix.Finalize (This => This,
-                                    Mac  => Result_MAC);
+                                            Mac  => Result_MAC);
 
             Add_Test (Result_Cipher = T.Cipher.all);
             Add_Test (Result_MAC = T.MAC.all);
 
             Saatana.Crypto.Phelix.Setup_Nonce (This  => This,
-                                       Nonce => T.Nonce.all);
+                                               Nonce => T.Nonce.all);
             Saatana.Crypto.Phelix.Process_AAD (This => This,
-                                       Aad  => T.Aad.all);
+                                               Aad  => T.Aad.all);
             Saatana.Crypto.Phelix.Decrypt_Bytes (This        => This,
-                                         Source      => T.Cipher.all,
-                                         Destination => Result_Plaintext);
+                                                 Source      => T.Cipher.all,
+                                                 Destination => Result_Plaintext);
             Saatana.Crypto.Phelix.Finalize (This => This,
-                                    Mac  => Result_MAC);
+                                            Mac  => Result_MAC);
 
             Add_Test (Result_Plaintext = T.Plaintext.all);
             Add_Test (Result_MAC = T.MAC.all);
-         end;
+         end Test_Encrypt_Decrypt_Bytes;
 
+         Test_Encrypt_Decrypt_Packets :
          declare
             Enc_Packet : Saatana.Crypto.Ciphertext_Stream (0 .. T.Plaintext.all'Length + T.Aad.all'Length - 1);
             Dec_Packet : Saatana.Crypto.Plaintext_Stream (0 .. T.Plaintext.all'Length + T.Aad.all'Length - 1);
             Result_MAC : Saatana.Crypto.MAC_Stream (0 .. Saatana.Crypto.Stream_Offset (Mac_Len) / 8  - 1);
          begin
             Saatana.Crypto.Phelix.Encrypt_Packet (This    => This,
-                                          Nonce   => T.Nonce.all,
-                                          Header  => T.Aad.all,
-                                          Payload => T.Plaintext.all,
-                                          Packet  => Enc_Packet,
-                                          Mac     => Result_MAC);
+                                                  Nonce   => T.Nonce.all,
+                                                  Header  => T.Aad.all,
+                                                  Payload => T.Plaintext.all,
+                                                  Packet  => Enc_Packet,
+                                                  Mac     => Result_MAC);
             Add_Test (Saatana.Crypto.Ciphertext_Stream (T.Aad.all) & T.Cipher.all = Enc_Packet);
             Add_Test (Result_MAC = T.MAC.all);
 
             Saatana.Crypto.Phelix.Decrypt_Packet (This    => This,
-                                          Nonce   => T.Nonce.all,
-                                          Header  => T.Aad.all,
-                                          Payload => T.Cipher.all,
-                                          Packet  => Dec_Packet,
-                                          Mac     => Result_MAC);
+                                                  Nonce   => T.Nonce.all,
+                                                  Header  => T.Aad.all,
+                                                  Payload => T.Cipher.all,
+                                                  Packet  => Dec_Packet,
+                                                  Mac     => Result_MAC);
             Add_Test (T.Aad.all & T.Plaintext.all = Dec_Packet);
             Add_Test (Result_MAC = T.MAC.all);
-         end;
-      end;
-   end loop;
+         end Test_Encrypt_Decrypt_Packets;
+      end Test_Encrypt_Decrypt;
+   end loop KAT_Loop;
 
+   Transmit_Tests :
    declare
       KEY_LENGTH   : constant := Saatana.Crypto.Phelix.Max_Key_Size / 8;
       MAC_LENGTH   : constant := Saatana.Crypto.Phelix.Max_MAC_Size / 8;
@@ -156,15 +162,15 @@ begin
          Received_Nonce : Saatana.Crypto.Nonce_Stream (0 .. NONCE_LENGTH - 1);
       begin
          Saatana.Crypto.Phelix.Setup_Key (This     => Ctx,
-                                  Key      => Key,
-                                  Mac_Size => MAC_LENGTH * 8);
+                                          Key      => Key,
+                                          Mac_Size => MAC_LENGTH * 8);
          --  Verify received packet.
          Saatana.Crypto.Phelix.Decrypt_Packet (This    => Ctx,
-                                       Nonce   => Nonce,
-                                       Header  => Saatana.Crypto.Plaintext_Stream (Nonce),
-                                       Payload => Saatana.Crypto.Ciphertext_Stream (EMPTY),
-                                       Packet  => Saatana.Crypto.Plaintext_Stream (Received_Nonce),
-                                       Mac     => Mac);
+                                               Nonce   => Nonce,
+                                               Header  => Saatana.Crypto.Plaintext_Stream (Nonce),
+                                               Payload => Saatana.Crypto.Ciphertext_Stream (EMPTY),
+                                               Packet  => Saatana.Crypto.Plaintext_Stream (Received_Nonce),
+                                               Mac     => Mac);
          --  MAC must match, otherwise someone tampered with our packet.
          Authenticated := Mac = Saatana.Crypto.MAC_Stream (Packet (MAC_FIRST .. MAC_LAST));
       end Receive_Nonce;
@@ -175,15 +181,15 @@ begin
          Ctx : Saatana.Crypto.Phelix.Context;
       begin
          Saatana.Crypto.Phelix.Setup_Key (This     => Ctx,
-                                  Key      => Key,
-                                  Mac_Size => MAC_LENGTH * 8);
+                                          Key      => Key,
+                                          Mac_Size => MAC_LENGTH * 8);
          --  Transmit that Nonce to the client.
          Saatana.Crypto.Phelix.Encrypt_Packet (This    => Ctx,
-                                       Nonce   => Nonce,
-                                       Header  => Saatana.Crypto.Plaintext_Stream (Nonce),
-                                       Payload => Saatana.Crypto.Plaintext_Stream (EMPTY),
-                                       Packet  => Packet (NONCE_FIRST .. NONCE_LAST),
-                                       Mac     => Saatana.Crypto.MAC_Stream (Packet (MAC_FIRST .. MAC_LAST)));
+                                               Nonce   => Nonce,
+                                               Header  => Saatana.Crypto.Plaintext_Stream (Nonce),
+                                               Payload => Saatana.Crypto.Plaintext_Stream (EMPTY),
+                                               Packet  => Packet (NONCE_FIRST .. NONCE_LAST),
+                                               Mac     => Saatana.Crypto.MAC_Stream (Packet (MAC_FIRST .. MAC_LAST)));
       end Send_Nonce;
 
       Key           : Saatana.Crypto.Key_Stream (0 .. KEY_LENGTH - 1);
@@ -196,6 +202,7 @@ begin
       --  Generate random/unique nonce.
       Nonce := (others => 0);
 
+      Check_MAC_Handling :
       for I in 1 .. 1024 loop
          Send_Nonce (Key    => Key,
                      Nonce  => Nonce,
@@ -222,13 +229,30 @@ begin
          Key := Saatana.Crypto.Key_Stream (Packet (MAC_FIRST .. MAC_LAST)) & Key (NONCE_FIRST .. NONCE_LAST);
 
          --  "Randomly" advance Nonce.
-         for J in 1 .. Key (Key'First) loop
-            for K in 1 .. Key (Key'First + 1) loop
-               Nonce := Nonce + Saatana.Crypto.Nonce_Stream (Key (Key'First .. Key'First + 13) & (14 .. NONCE_LENGTH - 1 => 0));
-            end loop;
-         end loop;
-      end loop;
-   end;
+         --
+         --  We take the current key stream, null out its two low order bytes,
+         --  and the result is being added Key (0) * Key (1) times to Nonce to
+         --  create a new seemingly random Nonce.
+         Shuffle_Nonce :
+         declare
+            Operand : constant Saatana.Crypto.Nonce_Stream :=
+              Saatana.Crypto.Nonce_Stream (Key (Key'First .. Key'First + 13) & (14 .. NONCE_LENGTH - 1 => 0));
+         begin
+            Loop_For_First_Byte_Of_Key :
+            for J in 1 .. Key (Key'First) loop
+               Loop_For_Second_Byte_Of_Key :
+               for K in 1 .. Key (Key'First + 1) loop
+                  Nonce := Nonce + Operand;
+               end loop Loop_For_Second_Byte_Of_Key;
+            end loop Loop_For_First_Byte_Of_Key;
+         end Shuffle_Nonce;
+      end loop Check_MAC_Handling;
+
+      --  Check for any regressions.  If, after all this Nonce shuffling above,
+      --  the last packet is still the expected one, we are good.
+      Add_Test (Image (Saatana.Crypto.General_Stream (Packet)) =
+                  "8F636CA7CC87C0AC88B35964B605E0005A586B0519BA64C6245C8724D3BEDAF1");
+   end Transmit_Tests;
 
    Ada.Text_IO.Put_Line ("Test results:"
                          & Natural'Image (Num_Succeeded)
