@@ -12,6 +12,9 @@ with Saatana.Crypto.Stream_Tools;
 package Saatana.Crypto.Phelix.Test_Vectors with
   SPARK_Mode => Off
 is
+
+   pragma Annotate (GNATcheck, Exempt_On, "Visible_Components",
+                    "Public access to components is intentional for test subroutines(s).");
    type Test_Vector is
       record
          Key       : Stream_Tools.Key_Stream_Access;
@@ -22,6 +25,7 @@ is
          Cipher    : Stream_Tools.Ciphertext_Stream_Access;
          MAC       : Stream_Tools.MAC_Stream_Access;
       end record;
+   pragma Annotate (GNATcheck, Exempt_Off, "Visible_Components");
 
    function "+" (Value : in String) return Stream_Tools.Ciphertext_Stream_Access renames Stream_Tools.To_Stream;
    function "+" (Value : in String) return Stream_Tools.Key_Stream_Access        renames Stream_Tools.To_Stream;
@@ -29,8 +33,10 @@ is
    function "+" (Value : in String) return Stream_Tools.Nonce_Stream_Access      renames Stream_Tools.To_Stream;
    function "+" (Value : in String) return Stream_Tools.Plaintext_Stream_Access  renames Stream_Tools.To_Stream;
 
+   type Test_Vectors is array (Positive range <>) of Test_Vector;
+
    --  Known answer tests.
-   KAT           : constant array (Positive range <>) of Test_Vector
+   KAT           : constant Test_Vectors
      :=
        (001 => (Key       => +"000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F",
                 Nonce     => +"202122232425262728292A2B2C2D2E2F",

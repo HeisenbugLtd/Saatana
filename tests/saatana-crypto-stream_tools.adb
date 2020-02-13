@@ -16,11 +16,12 @@ is
       Result : General_Stream (0 .. Value'Length / 2 - 1);
    begin
       for I in Result'Range loop
+         Convert_Hex_Byte :
          declare
             Str_Idx : constant Positive := Value'First + Natural (I) * 2;
          begin
             Result (I) := Byte'Value ("16#" & Value (Str_Idx .. Str_Idx + 1) & "#");
-         end;
+         end Convert_Hex_Byte;
       end loop;
 
       return Result;
