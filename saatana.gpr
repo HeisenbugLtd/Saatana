@@ -9,7 +9,7 @@ project Saatana is
    end Pretty_Printer;
 
    package Builder is
-      for Default_Switches ("ada") use ("-s", "-k", "-j3", "-g");
+      for Default_Switches ("ada") use ("-s", "-k", "-j0", "-g");
       for Global_Configuration_Pragmas use "rules/restrictions.ads";
    end Builder;
 
