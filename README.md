@@ -1,4 +1,4 @@
-![](assets/img/logo.png)
+![](https://raw.githubusercontent.com/HeisenbugLtd/web-resources/master/assets/img/logo-Saatana.png)
 
 # SPARK/Ada Algorithms Targeting Advanced Network Applications
 A cryptographic framework, proven for correctness in SPARK
