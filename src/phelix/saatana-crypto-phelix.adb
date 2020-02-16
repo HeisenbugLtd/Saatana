@@ -385,7 +385,7 @@ package body Saatana.Crypto.Phelix is
                               Increases => This.CS.I);
          pragma Loop_Invariant ((This.CS.I = This.CS.I'Loop_Entry + K + 1 and
                                  Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
-                                 Mac_Index = Stream_Offset (K) * 4 and
+                                 Mac_Index = Tmp'First + Stream_Offset (K) * 4 and
                                  Mac_Index + 3 in Tmp'Range) and then
                                 (for all X of Tmp (Tmp'First .. Mac_Index + 3) => X in Byte));
          pragma Annotate (GNATprove,
