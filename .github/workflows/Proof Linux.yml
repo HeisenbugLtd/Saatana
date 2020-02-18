@@ -3,7 +3,7 @@ name: Proof Linux
 on:
   schedule:
     # Run twice daily
-    - cron: '45 * * * *'
+    - cron: '42 0,12 * * *'
 
 jobs:
   build:
