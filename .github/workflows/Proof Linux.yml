@@ -37,7 +37,7 @@ jobs:
       #    name: gnatprove-${{ matrix.tag }}.out
       #    path: _build/gnatprove/gnatprove.out
       - name: Commit and push prove logs to artifacts
-          run: |
+        run: >
             cat _build/gnatprove/gnatprove.out > artifacts/gnatprove.out
             echo "\nProof run from `date --iso-8601=minutes`." >> artifacts/gnatprove.out # add timestamp to force changes
             git config --local user.email "gh+saatana@heisenbug.eu"
@@ -60,10 +60,10 @@ jobs:
       #    name: kat-${{ matrix.tag }}.out
       #    path: kat.out
       - name: Commit and push KAT results to artifacts
-          run: |
-            cat kat.out > artifacts/test_results.out
-            echo "\nTest run from `date --iso-8601=minutes`." >> artifacts/test_results.out # add timestamp to force changes
-            git config --local user.email "gh+saatana@heisenbug.eu"
-            git config --local user.name "Auto Committer"
-            git commit artifacts/test_results.out -m "* (Autocommit) Test results."
-            git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        run: >
+          cat kat.out > artifacts/test_results.out
+          echo "\nTest run from `date --iso-8601=minutes`." >> artifacts/test_results.out # add timestamp to force changes
+          git config --local user.email "gh+saatana@heisenbug.eu"
+          git config --local user.name "Auto Committer"
+          git commit artifacts/test_results.out -m "* (Autocommit) Test results."
+          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
