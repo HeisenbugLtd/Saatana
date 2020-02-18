@@ -1,6 +1,13 @@
 name: Build Linux
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+    - 'LICENSE'
+    - 'README.md'
+    - '_config.yml'
+    - 'artifacts/**'
+    - 'doc/**'
 
 jobs:
   build:
