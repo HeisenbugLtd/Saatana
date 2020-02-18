@@ -3,7 +3,7 @@
 # SPARK/Ada Algorithms Targeting Advanced Network Applications
 A cryptographic framework, proven for correctness in SPARK
 
-[![](https://github.com/HeisenbugLtd/Saatana/workflows/Build%20Linux/badge.svg)](https://github.com/HeisenbugLtd/Saatana/actions?query=event%3Apush+workflow%3A"Build+Linux")
+[![](https://github.com/HeisenbugLtd/Saatana/workflows/Build%20Linux/badge.svg)](https://github.com/HeisenbugLtd/Saatana/actions?query=workflow%3A"Build+Linux")
 [![](https://github.com/HeisenbugLtd/Saatana/workflows/Proof%20Linux/badge.svg)](https://github.com/HeisenbugLtd/Saatana/actions?query=workflow%3A"Proof+Linux")
 
 Algorithms contained
