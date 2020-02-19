@@ -7,6 +7,7 @@
 ------------------------------------------------------------------------------
 pragma License (Unrestricted);
 
+with Ada.Command_Line;
 with Ada.Text_IO;
 with Saatana.Crypto.Phelix.Test_Vectors;
 
@@ -259,4 +260,7 @@ begin
                          & " out of" & Natural'Image (Num_Tests)
                          & " succeeded.");
    Ada.Text_IO.Put_Line (if Num_Tests = Num_Succeeded then "<OK>" else "<FAILED>");
+   Ada.Command_Line.Set_Exit_Status (Code => (if Num_Tests = Num_Succeeded
+                                              then Ada.Command_Line.Success
+                                              else Ada.Command_Line.Failure));
 end Test_Phelix;
