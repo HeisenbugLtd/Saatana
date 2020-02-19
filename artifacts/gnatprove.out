@@ -1,8 +1,8 @@
-date               : 2020-02-18 14:09:49
+date               : 2020-02-19 00:51:02
 gnatprove version  : 2019 (20190517)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -P saatana.gpr
-Switches attribute: --mode=all --prover=cvc4,z3,altergo --proof=progressive --steps=131072 -j0
+ Proof_Switches attribute:
 
 
 Summary of SPARK analysis
