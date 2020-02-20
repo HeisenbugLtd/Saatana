@@ -6,9 +6,6 @@ trap 'echo "Interrupted" >&2 ; exit 1' INT
 set -o errexit
 set -o nounset
 
-# Build test_phelix
-gprbuild -j0 -p -P saatana.gpr
-
 # For the record
 echo ENVIRONMENT:
 env | sort
@@ -17,3 +14,6 @@ echo ............................
 echo GNAT VERSION:
 gnatls -v
 echo ............................
+
+# Build test_phelix
+gprbuild -j0 -p -P saatana.gpr
