@@ -39,4 +39,4 @@ jobs:
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-test.sh
       - name: Commit and push test results to artifacts
         run: >
-          .github/scripts/update_test_results.sh
+          .github/scripts/update_test_results.sh "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
