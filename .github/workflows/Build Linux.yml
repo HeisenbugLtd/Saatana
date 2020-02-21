@@ -38,6 +38,8 @@ jobs:
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-test.sh
       - name: Coding standards check
+        # gnat check seems only available in GNAT community, not FSF versions
+        if: ${{ matrix.tag }} == 'community-current' || $ {{ matrix.tag }} == 'centos-latest-community-2019'
         run: >
           docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
