@@ -6,7 +6,7 @@ trap 'echo "Interrupted" >&2 ; exit 1' INT
 set -o errexit
 set -o nounset
 
-# Expect the repository (including credentials as first and only argument
+# Expect the repository (including credentials) as first and only argument
 if [ $# -ne 1 ]; then
   echo "Missing repository argument!"
   exit 1
