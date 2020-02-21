@@ -29,11 +29,16 @@ jobs:
         run: docker pull alire/gnat:${{ matrix.tag }}
       - name: Build
         run: >
-          docker run -v${PWD}:/security -w /security
+          docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-build.sh
       - name: Run tests
         run: >
-          docker run -v${PWD}:/security -w /security
+          docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-test.sh
+      - name: Coding standards check
+        run: >
+          docker run -v${PWD}:/saatana -w /saatana
+          -e "BRANCH=${{ github.base_ref }}"
+          alire/gnat:${{ matrix.tag }} .github/scripts/ci-check.sh
