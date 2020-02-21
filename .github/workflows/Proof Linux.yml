@@ -25,12 +25,12 @@ jobs:
         run: >
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
-          alire/gnat:${{ matrix.tag }} bash .github/scripts/ci-build.sh
+          alire/gnat:${{ matrix.tag }} .github/scripts/ci-build.sh
       - name: Proof
         run: >
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
-          alire/gnat:${{ matrix.tag }} bash .github/scripts/ci-proof.sh
+          alire/gnat:${{ matrix.tag }} .github/scripts/ci-proof.sh
       - name: Commit and push prove logs to artifacts
         run: |
           cat _build/gnatprove/gnatprove.out > artifacts/gnatprove.out
@@ -43,16 +43,11 @@ jobs:
         with:
           name: gnatprove-${{ matrix.tag }}.stdout
           path: gnatprove.stdout
-      - name: Known Answers Test
+      - name: Run tests
         run: >
           docker run -v${PWD}:/security -w /security
           -e "BRANCH=${{ github.base_ref }}"
-          alire/gnat:${{ matrix.tag }} bash .github/scripts/ci-test.sh
-      - name: Commit and push KAT results to artifacts
-        run: |
-          cat kat.out > artifacts/test_results.out
-          printf "\nTest run from `date --iso-8601=minutes`.\n" >> artifacts/test_results.out # add timestamp to force changes
-          git config --local user.email "gh+saatana@heisenbug.eu"
-          git config --local user.name "Auto Committer"
-          git commit artifacts/test_results.out -m "* (Autocommit) Test results."
-          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          alire/gnat:${{ matrix.tag }} .github/scripts/ci-test.sh
+      - name: Commit and push test results to artifacts
+        run: >
+          .github/scripts/update_test_results.sh
