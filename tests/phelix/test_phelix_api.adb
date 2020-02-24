@@ -52,7 +52,7 @@ is
      0 .. AAD'Length + Plaintext'Length - 1;
    subtype AAD_Range is Packet_Range range
      Packet_Range'First .. AAD'Length - 1;
-   subtype PT_Range  is Saatana.Crypto.Stream_Index range
+   subtype PT_Range  is Packet_Range range
      AAD'Length .. Packet_Range'Last;
 
    Packet_Enc  : Saatana.Crypto.Ciphertext_Stream (Packet_Range) := (others => 0);
