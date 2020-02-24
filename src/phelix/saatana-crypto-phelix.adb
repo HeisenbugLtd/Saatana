@@ -23,38 +23,6 @@ package body Saatana.Crypto.Phelix is
      Post    => (for all X in Argument'Range => Argument (X) = (Argument'Old (X) xor Xor_With (X))),
      Inline  => True;
 
-   --
-   --  To_Unsigned
-   --
-   function To_Unsigned (Value : in Ciphertext_Stream) return Word_32 is
-     (To_Unsigned (General_Stream (Value))) with
-   Global  => null,
-   Depends => (To_Unsigned'Result => (Value));
-
-   --
-   --  To_Unsigned
-   --
-   function To_Unsigned (Value : in Key_Stream) return Word_32 is
-     (To_Unsigned (General_Stream (Value))) with
-   Global  => null,
-   Depends => (To_Unsigned'Result => (Value));
-
-   --
-   --  To_Unsigned
-   --
-   function To_Unsigned (Value : in Nonce_Stream) return Word_32 is
-     (To_Unsigned (General_Stream (Value))) with
-   Global  => null,
-   Depends => (To_Unsigned'Result => (Value));
-
-   --
-   --  To_Unsigned
-   --
-   function To_Unsigned (Value : in Plaintext_Stream) return Word_32 is
-     (To_Unsigned (General_Stream (Value))) with
-   Global  => null,
-   Depends => (To_Unsigned'Result => Value);
-
    --  Phelix algorithm internal constants
    OLD_Z_REG    : constant := 4;                 --  which var used for "old" state
    MAC_INIT_CNT : constant := 8;                 --  how many words of pre-MAC mixing

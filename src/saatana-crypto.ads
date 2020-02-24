@@ -30,7 +30,21 @@ is
    type Word_32 is new Interfaces.Unsigned_32; --  "Word" would be confusing on 64 bit machines.
 
    --  For type conversions.
-   type General_Stream    is array (Stream_Index range <>) of Byte;
+   type General_Stream is array (Stream_Index range <>) of Byte;
+
+   --
+   --  To_Unsigned
+   --
+   --  Converts the maximum four first values of the given Stream to a Word_32,
+   --  assuming Low_Order_First byte order (little endian).
+   --
+   function To_Unsigned (Value : in General_Stream) return Word_32 with
+     Global  => null,
+     Depends => (To_Unsigned'Result => (Value)),
+     Post    => (To_Unsigned'Result = (if Value'Length > 0 then (Shift_Left (Word_32 (Value (Value'First)),      0)) else 0) +
+                                      (if Value'Length > 1 then (Shift_Left (Word_32 (Value (Value'First + 1)),  8)) else 0) +
+                                      (if Value'Length > 2 then (Shift_Left (Word_32 (Value (Value'First + 2)), 16)) else 0) +
+                                      (if Value'Length > 3 then (Shift_Left (Word_32 (Value (Value'First + 3)), 24)) else 0));
 
    --  Provide some basic primitives.
    type Ciphertext_Stream is new General_Stream;
@@ -60,20 +74,6 @@ is
                                      1 => Byte (Shift_Right (Value,  8) mod 256),
                                      2 => Byte (Shift_Right (Value, 16) mod 256),
                                      3 => Byte (Shift_Right (Value, 24) mod 256)));
-
-   --
-   --  To_Unsigned
-   --
-   --  Converts the maximum four first values of the given Stream to a Word_32,
-   --  assuming Low_Order_First byte order (little endian).
-   --
-   function To_Unsigned (Value : in General_Stream) return Word_32 with
-     Global  => null,
-     Depends => (To_Unsigned'Result => (Value)),
-     Post    => (To_Unsigned'Result = (if Value'Length > 0 then (Shift_Left (Word_32 (Value (Value'First)),      0)) else 0) +
-                                      (if Value'Length > 1 then (Shift_Left (Word_32 (Value (Value'First + 1)),  8)) else 0) +
-                                      (if Value'Length > 2 then (Shift_Left (Word_32 (Value (Value'First + 2)), 16)) else 0) +
-                                      (if Value'Length > 3 then (Shift_Left (Word_32 (Value (Value'First + 3)), 24)) else 0));
 
 private
 
