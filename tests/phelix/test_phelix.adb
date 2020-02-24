@@ -53,7 +53,9 @@ is
    Verbose  : Boolean := False;
    KAT_Only : Boolean := False;
 begin
+   Evaluate_Command_Line :
    for Number in 1 .. Ada.Command_Line.Argument_Count loop
+      Check_Argument :
       declare
          Argument : constant String :=
            Ada.Command_Line.Argument (Number => Number);
@@ -67,8 +69,8 @@ begin
               (File => Ada.Text_IO.Standard_Error,
                Item => "Unrecognized command line parameter """ & Argument & """ ignored.");
          end if;
-      end;
-   end loop;
+      end Check_Argument;
+   end loop Evaluate_Command_Line;
 
    Ada.Text_IO.Put_Line ("Running KAT (Known Answers Tests)...");
 
@@ -145,6 +147,7 @@ begin
             Saatana.Crypto.Phelix.Process_AAD (This => This,
                                                Aad  => T.Aad.all);
 
+            Loop_Over_Plaintext_Bytes :
             for I in T.Plaintext.all'Range loop
                if I mod 4 = 0 then
                   Process_Plaintext_Word :
@@ -160,7 +163,7 @@ begin
                         Destination => Result_Cipher (I .. Last_Byte));
                   end Process_Plaintext_Word;
                end if;
-            end loop;
+            end loop Loop_Over_Plaintext_Bytes;
 
             Saatana.Crypto.Phelix.Finalize (This => This,
                                             Mac  => Result_MAC);
@@ -173,6 +176,7 @@ begin
             Saatana.Crypto.Phelix.Process_AAD (This => This,
                                                Aad  => T.Aad.all);
 
+            Loop_Over_Ciphertext_Bytes :
             for I in T.Cipher.all'Range loop
                if I mod 4 = 0 then
                   Process_Ciphertext_Word :
@@ -187,7 +191,7 @@ begin
                         Destination => Result_Plaintext (I .. Last_Byte));
                   end Process_Ciphertext_Word;
                end if;
-            end loop;
+            end loop Loop_Over_Ciphertext_Bytes;
 
             Saatana.Crypto.Phelix.Finalize (This => This,
                                             Mac  => Result_MAC);
