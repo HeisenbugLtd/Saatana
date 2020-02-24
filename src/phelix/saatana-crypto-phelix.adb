@@ -102,7 +102,6 @@ package body Saatana.Crypto.Phelix is
          declare
             Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
          begin
-            pragma Assert (Remaining_Bytes in 1 .. 4);
             Msg_Len := Msg_Len - Remaining_Bytes;
             Dst_Nxt := Dst_Idx + Remaining_Bytes;
 
@@ -211,8 +210,6 @@ package body Saatana.Crypto.Phelix is
          declare
             Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
          begin
-            pragma Assert (Remaining_Bytes in 1 .. 4);
-
             Msg_Len := Msg_Len - Remaining_Bytes;
             Dst_Nxt := Dst_Idx + Remaining_Bytes;
 
