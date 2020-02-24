@@ -8,5 +8,7 @@ set -o nounset
 
 echo "Running Phelix tests..."
 # Pipe KAT output directly into target file
-./_build/test_phelix > artifacts/test_phelix.out
+# Test program runs all KATs plus transmission tests by default, but does minimal output by default.
+# We want the full test runs, but also text output, so we specify --verbose (but not --kat-only).
+./_build/test_phelix --verbose > artifacts/test_phelix.out
 # Test subprogram sets exit status depending on if all tests succeeded or not.
