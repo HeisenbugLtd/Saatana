@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---  Copyright (C) 2017-2020 by Heisenbug Ltd. (gh+saatana@heisenbug.eu)
+--  Copyright (C) 2020 by Heisenbug Ltd. (gh+saatana@heisenbug.eu)
 --
 --  This work is free. You can redistribute it and/or modify it under the
 --  terms of the Do What The Fuck You Want To Public License, Version 2,
