@@ -45,7 +45,7 @@ jobs:
           path: gnatprove.stdout
       - name: TARing gnatprove output
         run: >
-          tar -vcf gnatprove-output.tar _build/gnatprove
+          tar --ignore-failed-read -vcf gnatprove-output.tar _build/gnatprove
       - name: Upload TAR archive of gnatprove output
         uses: actions/upload-artifact@master
         with:
