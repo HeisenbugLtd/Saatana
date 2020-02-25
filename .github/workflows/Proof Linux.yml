@@ -43,11 +43,14 @@ jobs:
         with:
           name: gnatprove-${{ matrix.tag }}.stdout.zip
           path: gnatprove.stdout
-      - name: Upload gnatprove output
+      - name: TARing gnatprove output
+        run: >
+          tar -vcf gnatprove-output.tar _build/gnatprove
+      - name: Upload TAR archive of gnatprove output
         uses: actions/upload-artifact@master
         with:
-          name: gnatprove-${{ matrix.tag }}.output.zip
-          path: _build/gnatprove/
+          name: gnatprove-${{ matrix.tag }}-output.tar.zip
+          path: gnatprove-output.tar
       - name: Run tests
         run: >
           docker run -v${PWD}:/security -w /security
