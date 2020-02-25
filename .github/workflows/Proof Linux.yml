@@ -41,8 +41,13 @@ jobs:
       - name: Upload gnatprove stdout
         uses: actions/upload-artifact@master
         with:
-          name: gnatprove-${{ matrix.tag }}.stdout
+          name: gnatprove-${{ matrix.tag }}.stdout.zip
           path: gnatprove.stdout
+      - name: Upload gnatprove output
+        uses: actions/upload-artifact@master
+        with:
+          name: gnatprove-output.zip
+          path: _build/gnatprove/
       - name: Run tests
         run: >
           docker run -v${PWD}:/security -w /security
