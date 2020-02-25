@@ -265,10 +265,6 @@ is
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Word_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                     and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Destination"" might not be initialized",
-                    "Encrypt_Bytes ensures full initialization of ""Destination"".");
 
    --
    --  Decrypt_Bytes
@@ -297,10 +293,6 @@ is
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Word_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                     and then
                  Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Destination"" might not be initialized",
-                    "Decrypt_Bytes ensures full initialization of ""Destination"".");
 
    --
    --  Finalize

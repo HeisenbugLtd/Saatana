@@ -122,10 +122,6 @@ package body Saatana.Crypto.Phelix is
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Plaintext_Stream (To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
             pragma Assert (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
-            pragma Annotate (GNATprove,
-                             False_Positive,
-                             """Destination"" might not be initialized",
-                             """Destination"" is initialized, there's an explicit assignment above");
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -145,18 +141,18 @@ package body Saatana.Crypto.Phelix is
                               Increases => Dst_Nxt);
          pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1                                       and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
-                                Dst_Nxt >= Destination'First and Dst_Nxt - 1 <= Destination'Last          and
-                                (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte));
-         pragma Annotate (GNATprove,
-                          False_Positive,
-                          """Destination"" might not be initialized",
-                          """Destination""is initialized, there's an explicit assignment in Decrypt_Word");
+                                Dst_Nxt = Dst_Idx);
+         pragma Loop_Invariant (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
       end loop;
 
       --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
-      --  Destination - which has only been manually justified above.
+      --  Destination - which has only been manually justified.
       pragma Assert (Dst_Idx > Destination'Last);
    end Decrypt_Bytes;
+   pragma Annotate (GNATprove,
+                    False_Positive,
+                    """Destination"" might not be initialized",
+                    """Destination"" is initialized in a loop (up to Dst_Nxt - 1)");
 
    --
    --  Decrypt_Packet
@@ -223,10 +219,6 @@ package body Saatana.Crypto.Phelix is
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Ciphertext_Stream (To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
             pragma Assert (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
-            pragma Annotate (GNATprove,
-                             False_Positive,
-                             """Destination"" might not be initialized",
-                             """Destination"" is initialized, there's an explicit assignment above");
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -243,20 +235,20 @@ package body Saatana.Crypto.Phelix is
                               Increases => Src_Idx,
                               Increases => Dst_Idx,
                               Increases => Dst_Nxt);
-         pragma Loop_Invariant (Src_Idx = Source'Last      - Msg_Len + 1 and
-                                Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
-                                Dst_Nxt >= Destination'First and Dst_Nxt - 1 <= Destination'Last          and
-                                (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte));
-         pragma Annotate (GNATprove,
-                          False_Positive,
-                          """Destination"" might not be initialized",
-                          """Destination"" is initialized, there's an explicit assignment in Encrypt_Word");
+         pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1
+                                and Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1
+                                and Dst_Nxt = Dst_Idx);
+         pragma Loop_Invariant (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
       end loop;
 
       --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
-      --  Destination - which has only been manually justified above.
+      --  Destination - which has only been manually justified.
       pragma Assert (Dst_Idx > Destination'Last);
    end Encrypt_Bytes;
+   pragma Annotate (GNATprove,
+                    False_Positive,
+                    """Destination"" might not be initialized",
+                    """Destination"" is initialized in a loop (up to Dst_Nxt - 1)");
 
    --
    --  Encrypt_Packet
