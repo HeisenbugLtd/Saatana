@@ -324,10 +324,6 @@ package body Saatana.Crypto.Phelix is
                  MAC_Stream (To_Stream (The_Key xor Plain_Text));
 
                pragma Assert (for all X of Tmp (Tmp'First .. Mac_Index + 3) => X in Byte);
-               pragma Annotate (GNATprove,
-                                False_Positive,
-                                """Tmp"" might not be initialized",
-                                """Tmp"" is initialized, there's an explicit assignment above");
             end Store_MAC_Word;
 
             H (Z              => This.CS.Z,
@@ -340,15 +336,11 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Variant (Increases => K,
                               Increases => Mac_Index,
                               Increases => This.CS.I);
-         pragma Loop_Invariant ((This.CS.I = This.CS.I'Loop_Entry + K + 1 and
-                                 Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
-                                 Mac_Index = Tmp'First + Stream_Offset (K) * 4 and
-                                 Mac_Index + 3 in Tmp'Range) and then
-                                (for all X of Tmp (Tmp'First .. Mac_Index + 3) => X in Byte));
-         pragma Annotate (GNATprove,
-                          False_Positive,
-                          """Tmp"" might not be initialized",
-                          """Tmp"" is initialized, there's an explicit assignment in Store_MAC_Word");
+         pragma Loop_Invariant (This.CS.I = This.CS.I'Loop_Entry + K + 1 and
+                                Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
+                                Mac_Index = Tmp'First + Stream_Offset (K) * 4 and
+                                Mac_Index + 3 in Tmp'Range);
+         pragma Loop_Invariant (for all X of Tmp (Tmp'First .. Mac_Index + 3) => X in Byte);
       end loop;
 
       pragma Assert (Tmp'First + Mac_Index + 3 = Tmp'Last);
@@ -356,15 +348,15 @@ package body Saatana.Crypto.Phelix is
 
       --  Copy the relevant bits back to MAC.
       Mac := Tmp (MAC_OFFSET .. MAC_OFFSET - 1 + Mac'Length);
-      pragma Annotate (GNATprove,
-                       False_Positive,
-                       """Tmp"" might not be initialized",
-                       """Tmp"" is initialized, the loop above writes to the whole range");
 
       --  We finalized the stream, so the previous Nonce should never be reused.
       --  Ensure at least part of this condition by marking the current Nonce as invalid.
       This.Setup_Phase := Key_Has_Been_Setup;
    end Finalize;
+   pragma Annotate (GNATprove,
+                    False_Positive,
+                    """Tmp"" might not be initialized",
+                    """Tmp"" is initialized in a loop which writes to the whole range");
 
    --
    --  H
