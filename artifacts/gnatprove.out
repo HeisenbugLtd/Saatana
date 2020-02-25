@@ -1,4 +1,4 @@
-date               : 2020-02-24 12:51:39
+date               : 2020-02-25 00:52:54
 gnatprove version  : 2019 (20190517)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -P saatana.gpr
@@ -11,34 +11,34 @@ Summary of SPARK analysis
 --------------------------------------------------------------------------------------------------------------------
 SPARK Analysis results        Total        Flow   Interval   CodePeer                 Provers   Justified   Unproved
 --------------------------------------------------------------------------------------------------------------------
-Data Dependencies                24          24          .          .                       .           .          .
-Flow Dependencies                18          18          .          .                       .           .          .
-Initialization                   28          17          .          .                       .          11          .
+Data Dependencies                20          20          .          .                       .           .          .
+Flow Dependencies                14          14          .          .                       .           .          .
+Initialization                   29          18          .          .                       .          11          .
 Non-Aliasing                      .           .          .          .                       .           .          .
-Run-time Checks                 190           .          .          .              190 (CVC4)           .          .
-Assertions                       24           .          .          .    24 (CVC4 98%, Z3 2%)           .          .
-Functional Contracts             21           .          .          .    21 (CVC4 96%, Z3 4%)           .          .
+Run-time Checks                 224           .          .          .              224 (CVC4)           .          .
+Assertions                       22           .          .          .    22 (CVC4 98%, Z3 2%)           .          .
+Functional Contracts             35           .          .          .    35 (CVC4 97%, Z3 3%)           .          .
 LSP Verification                  .           .          .          .                       .           .          .
 --------------------------------------------------------------------------------------------------------------------
-Total                           305    59 (19%)          .          .               235 (77%)     11 (4%)          .
+Total                           344    52 (15%)          .          .               281 (82%)     11 (3%)          .
 
 
-max steps used for successful proof: 44389
+max steps used for successful proof: 31201
 
-Analyzed 3 units
+Analyzed 4 units
 in unit saatana, 1 subprograms and packages out of 1 analyzed
   Saatana at saatana.ads:18 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 in unit saatana-crypto, 5 subprograms and packages out of 5 analyzed
   Saatana.Crypto at saatana-crypto.ads:20 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 absence of run-time errors of Saatana.Crypto fully established
-  Saatana.Crypto.Oadd at saatana-crypto.ads:42 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (6 checks)
+  Saatana.Crypto.Oadd at saatana-crypto.ads:56 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (6 checks)
 effects on parameters and Global variables of Saatana.Crypto.Oadd fully established
 absence of run-time errors of Saatana.Crypto.Oadd fully established
   Saatana.Crypto.Oadd.Add_Carry at saatana-crypto.adb:18 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (1 checks)
 the postcondition of Saatana.Crypto.Oadd.Add_Carry fully established
 effects on parameters and Global variables of Saatana.Crypto.Oadd.Add_Carry fully established
 absence of run-time errors of Saatana.Crypto.Oadd.Add_Carry fully established
-  Saatana.Crypto.To_Stream at saatana-crypto.ads:55 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (21 checks)
+  Saatana.Crypto.To_Stream at saatana-crypto.ads:69 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (21 checks)
 the postcondition of Saatana.Crypto.To_Stream depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Shift_Right
@@ -47,7 +47,7 @@ effects on parameters and Global variables of Saatana.Crypto.To_Stream depends o
 absence of run-time errors of Saatana.Crypto.To_Stream depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Shift_Right
-  Saatana.Crypto.To_Unsigned at saatana-crypto.ads:70 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (16 checks)
+  Saatana.Crypto.To_Unsigned at saatana-crypto.ads:41 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (16 checks)
 the postcondition of Saatana.Crypto.To_Unsigned depends on
   effects on parameters and Global variables of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Left
@@ -56,7 +56,7 @@ effects on parameters and Global variables of Saatana.Crypto.To_Unsigned depends
 absence of run-time errors of Saatana.Crypto.To_Unsigned depends on
   effects on parameters and Global variables of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Left
-in unit saatana-crypto-phelix, 25 subprograms and packages out of 25 analyzed
+in unit saatana-crypto-phelix, 21 subprograms and packages out of 21 analyzed
   Saatana.Crypto.Phelix at saatana-crypto-phelix.ads:48 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 absence of run-time errors of Saatana.Crypto.Phelix fully established
   Saatana.Crypto.Phelix.Context at saatana-crypto-phelix.ads:63 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
@@ -79,8 +79,8 @@ absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Msg_Len fully establishe
   Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:282 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (37 checks)
    suppressed messages:
     saatana-crypto-phelix.ads:284:29: Decrypt_Bytes ensures full initialization of "Destination".
-    saatana-crypto-phelix.adb:180:44: "Destination"is initialized, there's an explicit assignment in Decrypt_Word
-    saatana-crypto-phelix.adb:157:54: "Destination" is initialized, there's an explicit assignment above
+    saatana-crypto-phelix.adb:147:44: "Destination"is initialized, there's an explicit assignment in Decrypt_Word
+    saatana-crypto-phelix.adb:124:54: "Destination" is initialized, there's an explicit assignment above
 the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -123,8 +123,8 @@ absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Packet depends on
   Saatana.Crypto.Phelix.Encrypt_Bytes at saatana-crypto-phelix.ads:250 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (36 checks)
    suppressed messages:
     saatana-crypto-phelix.ads:252:29: Encrypt_Bytes ensures full initialization of "Destination".
-    saatana-crypto-phelix.adb:282:44: "Destination" is initialized, there's an explicit assignment in Encrypt_Word
-    saatana-crypto-phelix.adb:260:54: "Destination" is initialized, there's an explicit assignment above
+    saatana-crypto-phelix.adb:247:44: "Destination" is initialized, there's an explicit assignment in Encrypt_Word
+    saatana-crypto-phelix.adb:225:54: "Destination" is initialized, there's an explicit assignment above
 the postcondition of Saatana.Crypto.Phelix.Encrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -170,9 +170,9 @@ effects on parameters and Global variables of Saatana.Crypto.Phelix.Exclusive_Or
 absence of run-time errors of Saatana.Crypto.Phelix.Exclusive_Or fully established
   Saatana.Crypto.Phelix.Finalize at saatana-crypto-phelix.ads:311 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (33 checks)
    suppressed messages:
-    saatana-crypto-phelix.adb:369:44: "Tmp" is initialized, there's an explicit assignment above
-    saatana-crypto-phelix.adb:390:47: "Tmp" is initialized, there's an explicit assignment in Store_MAC_Word
-    saatana-crypto-phelix.adb:401:14: "Tmp" is initialized, the loop above writes to the whole range
+    saatana-crypto-phelix.adb:334:44: "Tmp" is initialized, there's an explicit assignment above
+    saatana-crypto-phelix.adb:355:47: "Tmp" is initialized, there's an explicit assignment in Store_MAC_Word
+    saatana-crypto-phelix.adb:366:14: "Tmp" is initialized, the loop above writes to the whole range
 the postcondition of Saatana.Crypto.Phelix.Finalize depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
@@ -186,7 +186,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Finalize depends on
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Saatana.Crypto.Phelix.H at saatana-crypto-phelix.adb:76 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (1 checks)
+  Saatana.Crypto.Phelix.H at saatana-crypto-phelix.adb:44 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (1 checks)
 the postcondition of Saatana.Crypto.Phelix.H depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
@@ -201,7 +201,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Key_Size_32Predicate fully e
   Saatana.Crypto.Phelix.MAC_Size_32Predicate at saatana-crypto-phelix.ads:57 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (1 checks)
 effects on parameters and Global variables of Saatana.Crypto.Phelix.MAC_Size_32Predicate fully established
 absence of run-time errors of Saatana.Crypto.Phelix.MAC_Size_32Predicate fully established
-  Saatana.Crypto.Phelix.Process_AAD at saatana-crypto-phelix.ads:225 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (15 checks)
+  Saatana.Crypto.Phelix.Process_AAD at saatana-crypto-phelix.ads:225 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (16 checks)
 the postcondition of Saatana.Crypto.Phelix.Process_AAD depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -215,7 +215,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Process_AAD depends on
   effects on parameters and Global variables of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
-  Saatana.Crypto.Phelix.Setup_Key at saatana-crypto-phelix.ads:182 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (26 checks)
+  Saatana.Crypto.Phelix.Setup_Key at saatana-crypto-phelix.ads:182 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (28 checks)
 the postcondition of Saatana.Crypto.Phelix.Setup_Key depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -232,7 +232,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Setup_Key depends on
   Saatana.Crypto.Phelix.Setup_Key_Called at saatana-crypto-phelix.ads:88 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Setup_Key_Called fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Setup_Key_Called fully established
-  Saatana.Crypto.Phelix.Setup_Nonce at saatana-crypto-phelix.ads:201 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (8 checks)
+  Saatana.Crypto.Phelix.Setup_Nonce at saatana-crypto-phelix.ads:201 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (9 checks)
 the postcondition of Saatana.Crypto.Phelix.Setup_Nonce depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -249,27 +249,19 @@ absence of run-time errors of Saatana.Crypto.Phelix.Setup_Nonce depends on
   Saatana.Crypto.Phelix.Setup_Nonce_Called at saatana-crypto-phelix.ads:92 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Setup_Nonce_Called fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Setup_Nonce_Called fully established
-  Saatana.Crypto.Phelix.To_Unsigned at saatana-crypto-phelix.adb:29 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
-effects on parameters and Global variables of Saatana.Crypto.Phelix.To_Unsigned depends on
+in unit test_phelix_api, 1 subprograms and packages out of 1 analyzed
+  Test_Phelix_API at test_phelix_api.adb:26 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (42 checks)
+effects on parameters and Global variables of Test_Phelix_API depends on
+  effects on parameters and Global variables of Ada.Command_Line.Set_Exit_Status
+  effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
-absence of run-time errors of Saatana.Crypto.Phelix.To_Unsigned depends on
+  effects on parameters and Global variables of Interfaces.Shift_Right
+absence of run-time errors of Test_Phelix_API depends on
+  effects on parameters and Global variables of Ada.Command_Line.Set_Exit_Status
+  effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
+  effects on parameters and Global variables of Interfaces.Shift_Right
+  absence of run-time errors of Ada.Command_Line.Set_Exit_Status
+  absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
-  Saatana.Crypto.Phelix.To_Unsigned at saatana-crypto-phelix.adb:37 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
-effects on parameters and Global variables of Saatana.Crypto.Phelix.To_Unsigned depends on
-  effects on parameters and Global variables of Interfaces.Shift_Left
-absence of run-time errors of Saatana.Crypto.Phelix.To_Unsigned depends on
-  effects on parameters and Global variables of Interfaces.Shift_Left
-  absence of run-time errors of Interfaces.Shift_Left
-  Saatana.Crypto.Phelix.To_Unsigned at saatana-crypto-phelix.adb:45 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
-effects on parameters and Global variables of Saatana.Crypto.Phelix.To_Unsigned depends on
-  effects on parameters and Global variables of Interfaces.Shift_Left
-absence of run-time errors of Saatana.Crypto.Phelix.To_Unsigned depends on
-  effects on parameters and Global variables of Interfaces.Shift_Left
-  absence of run-time errors of Interfaces.Shift_Left
-  Saatana.Crypto.Phelix.To_Unsigned at saatana-crypto-phelix.adb:53 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
-effects on parameters and Global variables of Saatana.Crypto.Phelix.To_Unsigned depends on
-  effects on parameters and Global variables of Interfaces.Shift_Left
-absence of run-time errors of Saatana.Crypto.Phelix.To_Unsigned depends on
-  effects on parameters and Global variables of Interfaces.Shift_Left
-  absence of run-time errors of Interfaces.Shift_Left
+  absence of run-time errors of Interfaces.Shift_Right
