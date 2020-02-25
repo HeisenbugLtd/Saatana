@@ -46,7 +46,7 @@ jobs:
       - name: Upload gnatprove output
         uses: actions/upload-artifact@master
         with:
-          name: gnatprove-output.zip
+          name: gnatprove-${{ matrix.tag }}.output.zip
           path: _build/gnatprove/
       - name: Run tests
         run: >
