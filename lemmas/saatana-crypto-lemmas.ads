@@ -7,7 +7,9 @@
 ------------------------------------------------------------------------------
 pragma License (Unrestricted);
 
-private package Saatana.Crypto.Lemmas is
+private package Saatana.Crypto.Lemmas with
+  SPARK_Mode => On
+is
 
    --
    --  Prove additional properties of the types declared in the parent
