@@ -1,4 +1,4 @@
-date               : 2020-02-25 14:17:17
+date               : 2020-02-26 00:52:23
 gnatprove version  : 2019 (20190517)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -P saatana.gpr
@@ -16,14 +16,14 @@ Flow Dependencies                14          14          .          .           
 Initialization                   29          18          .          .                       .          11          .
 Non-Aliasing                      .           .          .          .                       .           .          .
 Run-time Checks                 224           .          .          .              224 (CVC4)           .          .
-Assertions                       22           .          .          .    22 (CVC4 98%, Z3 2%)           .          .
+Assertions                       28           .          .          .    28 (CVC4 98%, Z3 2%)           .          .
 Functional Contracts             35           .          .          .    35 (CVC4 97%, Z3 3%)           .          .
 LSP Verification                  .           .          .          .                       .           .          .
 --------------------------------------------------------------------------------------------------------------------
-Total                           344    52 (15%)          .          .               281 (82%)     11 (3%)          .
+Total                           350    52 (15%)          .          .               287 (82%)     11 (3%)          .
 
 
-max steps used for successful proof: 31201
+max steps used for successful proof: 8795
 
 Analyzed 4 units
 in unit saatana, 1 subprograms and packages out of 1 analyzed
@@ -76,11 +76,11 @@ absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Mac_Size fully establish
   Saatana.Crypto.Phelix.Ctx_Msg_Len at saatana-crypto-phelix.ads:82 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Ctx_Msg_Len fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Msg_Len fully established
-  Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:282 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (37 checks)
+  Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:278 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (39 checks)
    suppressed messages:
-    saatana-crypto-phelix.ads:284:29: Decrypt_Bytes ensures full initialization of "Destination".
-    saatana-crypto-phelix.adb:147:44: "Destination"is initialized, there's an explicit assignment in Decrypt_Word
-    saatana-crypto-phelix.adb:124:54: "Destination" is initialized, there's an explicit assignment above
+    saatana-crypto-phelix.ads:280:29: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:145:59: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:124:54: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
 the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -120,11 +120,11 @@ absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Packet depends on
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Saatana.Crypto.Phelix.Encrypt_Bytes at saatana-crypto-phelix.ads:250 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (36 checks)
+  Saatana.Crypto.Phelix.Encrypt_Bytes at saatana-crypto-phelix.ads:250 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (38 checks)
    suppressed messages:
-    saatana-crypto-phelix.ads:252:29: Encrypt_Bytes ensures full initialization of "Destination".
-    saatana-crypto-phelix.adb:247:44: "Destination" is initialized, there's an explicit assignment in Encrypt_Word
-    saatana-crypto-phelix.adb:225:54: "Destination" is initialized, there's an explicit assignment above
+    saatana-crypto-phelix.ads:252:29: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:241:59: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:221:54: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
 the postcondition of Saatana.Crypto.Phelix.Encrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -168,11 +168,11 @@ absence of run-time errors of Saatana.Crypto.Phelix.Encrypt_Packet depends on
 the postcondition of Saatana.Crypto.Phelix.Exclusive_Or fully established
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Exclusive_Or fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Exclusive_Or fully established
-  Saatana.Crypto.Phelix.Finalize at saatana-crypto-phelix.ads:311 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (33 checks)
+  Saatana.Crypto.Phelix.Finalize at saatana-crypto-phelix.ads:303 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (35 checks)
    suppressed messages:
-    saatana-crypto-phelix.adb:334:44: "Tmp" is initialized, there's an explicit assignment above
-    saatana-crypto-phelix.adb:355:47: "Tmp" is initialized, there's an explicit assignment in Store_MAC_Word
-    saatana-crypto-phelix.adb:366:14: "Tmp" is initialized, the loop above writes to the whole range
+    saatana-crypto-phelix.adb:326:44: "Tmp" is initialized in a loop which writes to the whole range
+    saatana-crypto-phelix.adb:343:46: "Tmp" is initialized in a loop which writes to the whole range
+    saatana-crypto-phelix.adb:350:14: "Tmp" is initialized in a loop which writes to the whole range
 the postcondition of Saatana.Crypto.Phelix.Finalize depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
