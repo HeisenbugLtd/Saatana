@@ -66,14 +66,14 @@ is
    --
    --  Proof function.
    --
-   --  Supposed to show that the array give in the "Stream" argument is
+   --  Supposed to show that the array given in the "Stream" argument is
    --  initialized from the beginning until the given index "Last".
    --
-   --  NOTE: This function is essentially True for all language purposes, Byte
+   --  NOTE: This function is essentially True for all language purposes, "Byte"
    --        can never be invalid as it covers the whole range, even if
    --        uninitialized.
    --
-   --  The idea to use that proof function is to show intent and have reasonable
+   --  The idea of this proof function is to show intent and have reasonable
    --  confidence in Loop_Invariants and Assert pragmas that arrays are indeed
    --  being fully initialized.
    --
