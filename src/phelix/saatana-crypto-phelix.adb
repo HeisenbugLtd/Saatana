@@ -32,6 +32,45 @@ package body Saatana.Crypto.Phelix is
    MAC_Magic_XOR : constant Word_32 := 16#912D94F1#; --  magic constant for MAC
    AAD_Magic_XOR : constant Word_32 := 16#AADAADAA#; --  magic constant for AAD
 
+   pragma Warnings (GNATProve, Off, "attribute Valid is assumed to return True",
+                    Reason => "Use of 'Valid instead of membership test is intentional.");
+   function Initialized_Until (Stream : in General_Stream;
+                               Last   : in Stream_Index) return Boolean is
+     (for all X of Stream (Stream'First .. Last) => X'Valid) with
+     Ghost   => True,
+     Pre     => Stream'Length > 0 and then Last <= Stream'Last,
+     Global  => null,
+     Depends => (Initialized_Until'Result => (Stream, Last)),
+     Post    => (Initialized_Until'Result = (for all X of Stream (Stream'First .. Last) => X in Byte));
+   pragma Warnings (GNATProve, Off, "attribute Valid is assumed to return True");
+
+   function Initialized_Until (Stream : in Ciphertext_Stream;
+                               Last   : in Stream_Index) return Boolean is
+     (Initialized_Until (General_Stream (Stream), Last)) with
+     Ghost   => True,
+     Pre     => Stream'Length > 0 and then Last <= Stream'Last,
+     Global  => null,
+     Depends => (Initialized_Until'Result => (Stream, Last)),
+     Post    => (Initialized_Until'Result = (for all X of Stream (Stream'First .. Last) => X in Byte));
+
+   function Initialized_Until (Stream : in MAC_Stream;
+                               Last   : in Stream_Index) return Boolean is
+      (Initialized_Until (General_Stream (Stream), Last)) with
+     Ghost   => True,
+     Pre     => Stream'Length > 0 and then Last <= Stream'Last,
+     Global  => null,
+     Depends => (Initialized_Until'Result => (Stream, Last)),
+     Post    => (Initialized_Until'Result = (for all X of Stream (Stream'First .. Last) => X in Byte));
+
+   function Initialized_Until (Stream : in Plaintext_Stream;
+                               Last   : in Stream_Index) return Boolean is
+      (Initialized_Until (General_Stream (Stream), Last)) with
+     Ghost   => True,
+     Pre     => Stream'Length > 0 and then Last <= Stream'Last,
+     Global  => null,
+     Depends => (Initialized_Until'Result => (Stream, Last)),
+     Post    => (Initialized_Until'Result = (for all X of Stream (Stream'First .. Last) => X in Byte));
+
    --
    --  H
    --
@@ -121,7 +160,8 @@ package body Saatana.Crypto.Phelix is
 
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Plaintext_Stream (To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
+            pragma Assert (Initialized_Until (Stream => Destination,
+                                              Last   => Dst_Nxt - 1));
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -142,7 +182,8 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1                                       and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
+         pragma Loop_Invariant (Initialized_Until (Stream => Destination,
+                                                   Last   => Dst_Nxt - 1));
       end loop;
 
       --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
@@ -218,7 +259,8 @@ package body Saatana.Crypto.Phelix is
             Cipher_Text := The_Key xor Plain_Text;
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Ciphertext_Stream (To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
+            pragma Assert (Initialized_Until (Stream => Destination,
+                                              Last   => Dst_Nxt - 1));
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -238,7 +280,8 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1
                                 and Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1
                                 and Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (for all X of Destination (Destination'First .. Dst_Nxt - 1) => X in Byte);
+         pragma Loop_Invariant (Initialized_Until (Stream => Destination,
+                                                   Last   => Dst_Nxt - 1));
       end loop;
 
       --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
@@ -323,7 +366,8 @@ package body Saatana.Crypto.Phelix is
                Tmp (Mac_Index .. Mac_Index + 3) :=
                  MAC_Stream (To_Stream (The_Key xor Plain_Text));
 
-               pragma Assert (for all X of Tmp (Tmp'First .. Mac_Index + 3) => X in Byte);
+               pragma Assert (Initialized_Until (Stream => Tmp,
+                                                 Last   => Mac_Index + 3));
             end Store_MAC_Word;
 
             H (Z              => This.CS.Z,
@@ -340,7 +384,8 @@ package body Saatana.Crypto.Phelix is
                                 Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
                                 Mac_Index = Tmp'First + Stream_Offset (K) * 4 and
                                 Mac_Index + 3 in Tmp'Range);
-         pragma Loop_Invariant (for all X of Tmp (Tmp'First .. Mac_Index + 3) => X in Byte);
+         pragma Loop_Invariant (Initialized_Until (Stream => Tmp,
+                                                   Last   => Mac_Index + 3));
       end loop;
 
       pragma Assert (Tmp'First + Mac_Index + 3 = Tmp'Last);
