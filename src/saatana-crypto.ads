@@ -47,6 +47,21 @@ is
                                       (if Value'Length > 3 then (Shift_Left (Word_32 (Value (Value'First + 3)), 24)) else 0));
 
    --
+   --  To_Stream
+   --
+   --  Converts the given Word_32 value to a stream in Low_Order_First
+   --  byte order (little endian).
+   --
+   function To_Stream (Value : in Word_32) return General_Stream with
+     Global  => null,
+     Depends => (To_Stream'Result => Value),
+     Post    => ((To_Stream'Result'Length = 4 and To_Stream'Result'First = 0) and then
+                 To_Stream'Result = (0 => Byte (Shift_Right (Value,  0) mod 256),
+                                     1 => Byte (Shift_Right (Value,  8) mod 256),
+                                     2 => Byte (Shift_Right (Value, 16) mod 256),
+                                     3 => Byte (Shift_Right (Value, 24) mod 256)));
+
+   --
    --  Initialized_Until
    --
    --  Proof function.
@@ -102,21 +117,6 @@ is
      Depends => ("+"'Result => (Left,
                                 Right)),
      Pre     => (Right'Length = Left'Length);
-
-   --
-   --  To_Stream
-   --
-   --  Converts the given Word_32 value to a stream in Low_Order_First
-   --  byte order (little endian).
-   --
-   function To_Stream (Value : in Word_32) return General_Stream with
-     Global  => null,
-     Depends => (To_Stream'Result => Value),
-     Post    => ((To_Stream'Result'Length = 4 and To_Stream'Result'First = 0) and then
-                 To_Stream'Result = (0 => Byte (Shift_Right (Value,  0) mod 256),
-                                     1 => Byte (Shift_Right (Value,  8) mod 256),
-                                     2 => Byte (Shift_Right (Value, 16) mod 256),
-                                     3 => Byte (Shift_Right (Value, 24) mod 256)));
 
 private
 

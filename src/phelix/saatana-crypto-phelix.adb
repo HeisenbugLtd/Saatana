@@ -119,8 +119,7 @@ package body Saatana.Crypto.Phelix is
             Plain_Text :=
               To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1)) xor (The_Key and MASK (Remaining_Bytes));
 
-            Destination (Dst_Idx .. Dst_Nxt - 1) :=
-              Plaintext_Stream (To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
+            Destination (Dst_Idx .. Dst_Nxt - 1) := To_Stream (Plain_Text) (0 .. Remaining_Bytes - 1);
             pragma Assert (Initialized_Until (Stream => Destination,
                                               Last   => Dst_Nxt - 1));
 
@@ -218,8 +217,7 @@ package body Saatana.Crypto.Phelix is
             The_Key     := This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
             Plain_Text  := To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1));
             Cipher_Text := The_Key xor Plain_Text;
-            Destination (Dst_Idx .. Dst_Nxt - 1) :=
-              Ciphertext_Stream (To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
+            Destination (Dst_Idx .. Dst_Nxt - 1) := To_Stream (Cipher_Text) (0 .. Remaining_Bytes - 1);
             pragma Assert (Initialized_Until (Stream => Destination,
                                               Last   => Dst_Nxt - 1));
 
@@ -324,8 +322,7 @@ package body Saatana.Crypto.Phelix is
                            This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
             begin
                Mac_Index := Tmp'First + Stream_Offset (K) * 4;
-               Tmp (Mac_Index .. Mac_Index + 3) :=
-                 MAC_Stream (To_Stream (The_Key xor Plain_Text));
+               Tmp (Mac_Index .. Mac_Index + 3) := To_Stream (The_Key xor Plain_Text);
 
                pragma Assert (Initialized_Until (Stream => Tmp,
                                                  Last   => Mac_Index + 3));
