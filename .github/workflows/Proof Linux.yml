@@ -45,7 +45,7 @@ jobs:
           path: gnatprove.stdout
       - name: TARing gnatprove output
         run: >
-          tar --ignore-failed-read`(for i in *.ali *.cwsi *.stderr *.stdout; do printf " --exclude=${i}"; done)` -vcf gnatprove-output.tar _build/gnatprove
+          tar --ignore-failed-read`(for i in "*.ali" "*.cswi" "*.stderr" "*.stdout"; do printf " --exclude=${i}"; done)` -vcf gnatprove-output.tar _build/gnatprove
       - name: Upload TAR archive of gnatprove output
         uses: actions/upload-artifact@master
         with:
