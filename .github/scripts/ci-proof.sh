@@ -14,4 +14,4 @@ SPARKDIR=/opt/gnat/libexec/spark/bin
 (test -x ${SPARKDIR}/cvc4 && echo `${SPARKDIR}/cvc4 --version`) || true
 (test -x ${SPARKDIR}/z3 && echo `${SPARKDIR}/z3 -version`) || true
 
-gnatprove --assumptions --output-header -P saatana.gpr | tee gnatprove.stdout
+gnatprove --assumptions --output-header -U -P saatana.gpr | tee gnatprove.stdout
