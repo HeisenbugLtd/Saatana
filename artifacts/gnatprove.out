@@ -1,26 +1,26 @@
-date               : 2020-03-12 00:59:07
+date               : 2020-03-12 13:57:26
 gnatprove version  : 2019 (20190517)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -U -P saatana.gpr
-Switches attribute: --mode=all --prover=cvc4,z3,altergo --proof=progressive --steps=131072 -j0
+Switches attribute: --prover=z3,cvc4,altergo --mode=all --proof=progressive --steps=131072 -j0
 
 
 Summary of SPARK analysis
 =========================
 
----------------------------------------------------------------------------------------------------------------------
-SPARK Analysis results        Total        Flow   Interval   CodePeer                  Provers   Justified   Unproved
----------------------------------------------------------------------------------------------------------------------
-Data Dependencies                21          21          .          .                        .           .          .
-Flow Dependencies                15          15          .          .                        .           .          .
-Initialization                   29          18          .          .                        .          11          .
-Non-Aliasing                      .           .          .          .                        .           .          .
-Run-time Checks                 231           .          .          .               231 (CVC4)           .          .
-Assertions                       34           .          .          .    34 (CVC4 83%, Z3 17%)           .          .
-Functional Contracts             42           .          .          .     42 (CVC4 98%, Z3 2%)           .          .
-LSP Verification                  .           .          .          .                        .           .          .
----------------------------------------------------------------------------------------------------------------------
-Total                           372    54 (15%)          .          .                307 (83%)     11 (3%)          .
+----------------------------------------------------------------------------------------------------------------------
+SPARK Analysis results        Total        Flow   Interval   CodePeer                   Provers   Justified   Unproved
+----------------------------------------------------------------------------------------------------------------------
+Data Dependencies                21          21          .          .                         .           .          .
+Flow Dependencies                15          15          .          .                         .           .          .
+Initialization                   29          18          .          .                         .          11          .
+Non-Aliasing                      .           .          .          .                         .           .          .
+Run-time Checks                 231           .          .          .    231 (CVC4 0%, Z3 100%)           .          .
+Assertions                       34           .          .          .                   34 (Z3)           .          .
+Functional Contracts             42           .          .          .      42 (CVC4 1%, Z3 99%)           .          .
+LSP Verification                  .           .          .          .                         .           .          .
+----------------------------------------------------------------------------------------------------------------------
+Total                           372    54 (15%)          .          .                 307 (83%)     11 (3%)          .
 
 
 max steps used for successful proof: 91430
