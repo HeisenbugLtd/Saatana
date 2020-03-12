@@ -30,12 +30,13 @@ project Saatana is
       CVC4_First     := ("--prover=cvc4,z3,altergo") & Proof_Switches;
       Z3_First       := ("--prover=z3,cvc4,altergo") & Proof_Switches;
 
-      for Switches use CVC4_First;
+      --  Z3 seems significantly faster in proving certain VCs (see list below), so run it first.
+      for Switches use Z3_First;
 
-      --  Z3 seems significantly faster in proving certain VCs here, so run it first.
-      for Switches ("saatana-crypto-phelix.adb") use Z3_First;
-      for Switches ("saatana-crypto-phelix.ads") use Z3_First;
-      for Switches ("saatana-crypto-lemmas.ads") use Z3_First;
+      --  Alas, gnatprove seemingly cannot handle per-file switches.
+      --  for Switches ("saatana-crypto-phelix.adb") use Z3_First;
+      --  for Switches ("saatana-crypto-phelix.ads") use Z3_First;
+      --  for Switches ("saatana-crypto-lemmas.ads") use Z3_First;
    end Prove;
 
    package Check is
