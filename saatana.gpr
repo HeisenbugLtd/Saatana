@@ -26,12 +26,16 @@ project Saatana is
    end Linker;
 
    package Prove is
-      for Switches use ("--mode=all", "--prover=cvc4,z3,altergo", "--proof=progressive", "--steps=131072", "-j0");
+      Proof_Switches := ("--mode=all", "--proof-progressive", "--steps=131072", "-j0");
+      CVC4_First     := ("--prover=cvc4,z3,altergo") & Proof_Switches;
+      Z3_First       := ("--prover=z3,cvc4,altergo") & Proof_Switches;
+
+      for Switches use CVC4_First;
 
       --  Z3 seems significantly faster in proving certain VCs here, so run it first.
-      for Switches ("saatana-crypto-phelix.adb") use ("--mode=all", "--prover=z3,cvc4,altergo", "--proof=progressive", "--steps=131072", "-j0");
-      for Switches ("saatana-crypto-phelix.ads") use ("--mode=all", "--prover=z3,cvc4,altergo", "--proof=progressive", "--steps=131072", "-j0");
-      for Switches ("saatana-crypto-lemmas.ads") use ("--mode=all", "--prover=z3,cvc4,altergo", "--proof=progressive", "--steps=131072", "-j0");
+      for Switches ("saatana-crypto-phelix.adb") use Z3_First;
+      for Switches ("saatana-crypto-phelix.ads") use Z3_First;
+      for Switches ("saatana-crypto-lemmas.ads") use Z3_First;
    end Prove;
 
    package Check is
