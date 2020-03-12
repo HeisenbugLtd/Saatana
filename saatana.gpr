@@ -26,7 +26,7 @@ project Saatana is
    end Linker;
 
    package Prove is
-      Proof_Switches := ("--mode=all", "--proof-progressive", "--steps=131072", "-j0");
+      Proof_Switches := ("--mode=all", "--proof=progressive", "--steps=131072", "-j0");
       CVC4_First     := ("--prover=cvc4,z3,altergo") & Proof_Switches;
       Z3_First       := ("--prover=z3,cvc4,altergo") & Proof_Switches;
 
