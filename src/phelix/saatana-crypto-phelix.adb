@@ -112,10 +112,12 @@ package body Saatana.Crypto.Phelix is
 
             The_Key := This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
 
-            --  If there was a partial word, the resulting Plain_Text needs to be masked as it is used
-            --  in the further derivation of new Z values. Contrary to the C reference implementation
-            --  which reads undefined bytes at the end of the stream, here the same result is achieved
-            --  by masking the Key_Stream value, because To_Unsigned already returns zero for the bytes.
+            --  If there was a partial word, the resulting Plain_Text needs
+            --  to be masked as it is used in the further derivation of new Z
+            --  values. Contrary to the C reference implementation which reads
+            --  undefined bytes at the end of the stream, here the same result
+            --  is achieved by masking the Key_Stream value, because
+            --  To_Unsigned already returns zero for the bytes.
             Plain_Text :=
               To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1)) xor (The_Key and MASK (Remaining_Bytes));
 
@@ -147,8 +149,9 @@ package body Saatana.Crypto.Phelix is
                                                    Last   => Dst_Nxt - 1));
       end loop;
 
-      --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
-      --  Destination - which has only been manually justified.
+      --  Assert that Dst_Idx is now past the end of the array, so we have a
+      --  reasonable proof about the initialization of Destination - which has
+      --  only been manually justified.
       pragma Assert (Dst_Idx > Destination'Last);
    end Decrypt_Bytes;
    pragma Annotate (GNATprove,
@@ -245,8 +248,9 @@ package body Saatana.Crypto.Phelix is
                                                    Last   => Dst_Nxt - 1));
       end loop;
 
-      --  Assert that Dst_Idx is now past the end of the array, so we have a reasonable proof about the initialization of
-      --  Destination - which has only been manually justified.
+      --  Assert that Dst_Idx is now past the end of the array, so we have a
+      --  reasonable proof about the initialization of Destination - which has
+      --  only been manually justified.
       pragma Assert (Dst_Idx > Destination'Last);
    end Encrypt_Bytes;
    pragma Annotate (GNATprove,
@@ -354,8 +358,9 @@ package body Saatana.Crypto.Phelix is
       --  Copy the relevant bits back to MAC.
       Mac := Tmp (MAC_OFFSET .. MAC_OFFSET - 1 + Mac'Length);
 
-      --  We finalized the stream, so the previous Nonce should never be reused.
-      --  Ensure at least part of this condition by marking the current Nonce as invalid.
+      --  We finalized the stream, so the previous Nonce should never be
+      --  reused. Ensure at least part of this condition by marking the current
+      --  Nonce as invalid.
       This.Setup_Phase := Key_Has_Been_Setup;
    end Finalize;
    pragma Annotate (GNATprove,
@@ -469,12 +474,17 @@ package body Saatana.Crypto.Phelix is
       This.KS.Key_Size := Key_Size;
       This.KS.MAC_Size := Mac_Size;
 
-      --  pre-compute X_1_bump "constant" to save clock cycles during Setup_Nonce
+      --  Pre-compute X_1_bump "constant" to save clock cycles during
+      --  Setup_Nonce.
+      --  To be honest, I am really not certain if that micro-optimization
+      --  which I carried over from the C reference implementation is worth the
+      --  effort.
       This.KS.X_1_Bump := Key_Size / 2 + 256 * (Mac_Size mod Max_MAC_Size);
 
       --  copy key to X_0, in correct endianness
       --  Special case for zero length key, there we just set everything to 0.
-      --  This is done unconditionally to satisfy the prover that X_0 is fully initialized in each path.
+      --  This is done unconditionally to satisfy the prover that X_0 is fully
+      --  initialized in each path.
       This.KS.X_0 := (others => 0);
 
       if Key'Length /= 0 then
@@ -510,7 +520,8 @@ package body Saatana.Crypto.Phelix is
                K := 4 * (I mod 2);
 
                --  Assignment done via aggregrate rather than array concatenation
-               --  ("Z := This.KS.X_0 (K .. K + 3) & (Key_Size / 8 + 64);") as this is better handled by the prover.
+               --  ("Z := This.KS.X_0 (K .. K + 3) & (Key_Size / 8 + 64);") as
+               --  this is better handled by the prover.
                Z := State_Words'(0 => This.KS.X_0 (K + 0),
                                  1 => This.KS.X_0 (K + 1),
                                  2 => This.KS.X_0 (K + 2),
