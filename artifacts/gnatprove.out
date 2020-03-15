@@ -1,4 +1,4 @@
-date               : 2020-03-14 12:48:58
+date               : 2020-03-15 00:49:40
 gnatprove version  : 2019 (20190517)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -U -P saatana.gpr
@@ -90,8 +90,8 @@ absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Msg_Len fully establishe
   Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:278 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (43 checks)
    suppressed messages:
     saatana-crypto-phelix.ads:280:29: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
-    saatana-crypto-phelix.adb:146:62: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
-    saatana-crypto-phelix.adb:124:57: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:148:62: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:126:57: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
 the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -134,8 +134,8 @@ absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Packet depends on
   Saatana.Crypto.Phelix.Encrypt_Bytes at saatana-crypto-phelix.ads:250 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (42 checks)
    suppressed messages:
     saatana-crypto-phelix.ads:252:29: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
-    saatana-crypto-phelix.adb:244:62: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
-    saatana-crypto-phelix.adb:223:57: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:247:62: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
+    saatana-crypto-phelix.adb:226:57: "Destination" is initialized in a loop (up to Dst_Nxt - 1)
 the postcondition of Saatana.Crypto.Phelix.Encrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -181,9 +181,9 @@ effects on parameters and Global variables of Saatana.Crypto.Phelix.Exclusive_Or
 absence of run-time errors of Saatana.Crypto.Phelix.Exclusive_Or fully established
   Saatana.Crypto.Phelix.Finalize at saatana-crypto-phelix.ads:303 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (38 checks)
    suppressed messages:
-    saatana-crypto-phelix.adb:329:60: "Tmp" is initialized in a loop which writes to the whole range
-    saatana-crypto-phelix.adb:347:62: "Tmp" is initialized in a loop which writes to the whole range
-    saatana-crypto-phelix.adb:355:14: "Tmp" is initialized in a loop which writes to the whole range
+    saatana-crypto-phelix.adb:333:60: "Tmp" is initialized in a loop which writes to the whole range
+    saatana-crypto-phelix.adb:351:62: "Tmp" is initialized in a loop which writes to the whole range
+    saatana-crypto-phelix.adb:359:14: "Tmp" is initialized in a loop which writes to the whole range
 the postcondition of Saatana.Crypto.Phelix.Finalize depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
