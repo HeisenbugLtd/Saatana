@@ -20,4 +20,6 @@ package Saatana with
   SPARK_Mode => On
 is
 
+   Version : constant String := "2.0.1-prerelease";
+
 end Saatana;
