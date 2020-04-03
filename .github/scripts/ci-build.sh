@@ -11,9 +11,9 @@ echo ENVIRONMENT:
 env | sort
 echo ............................
 
-echo GNAT VERSION:
-gnatls -v
-echo ............................
+#echo GNAT VERSION:
+#gnatls -v
+#echo ............................
 
 # Build test_phelix
 gprbuild -j0 -p -P saatana.gpr
