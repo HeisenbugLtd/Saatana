@@ -1,5 +1,5 @@
-date               : 2020-05-24 12:49:18
-gnatprove version  : 2019 (20190517)
+date               : 2020-05-25 00:47:34
+gnatprove version  : SPARK Community 2020 (20200429)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -U -P saatana.gpr
 Switches attribute: --prover=z3,cvc4,altergo --mode=all --proof=progressive --steps=131072 -j0
@@ -9,21 +9,23 @@ Summary of SPARK analysis
 =========================
 
 ----------------------------------------------------------------------------------------------------------------------
-SPARK Analysis results        Total        Flow   Interval   CodePeer                   Provers   Justified   Unproved
+SPARK Analysis results        Total        Flow   CodePeer                              Provers   Justified   Unproved
 ----------------------------------------------------------------------------------------------------------------------
-Data Dependencies                21          21          .          .                         .           .          .
-Flow Dependencies                15          15          .          .                         .           .          .
-Initialization                   29          18          .          .                         .          11          .
-Non-Aliasing                      .           .          .          .                         .           .          .
-Run-time Checks                 231           .          .          .    231 (CVC4 0%, Z3 100%)           .          .
-Assertions                       34           .          .          .                   34 (Z3)           .          .
-Functional Contracts             42           .          .          .      42 (CVC4 1%, Z3 99%)           .          .
-LSP Verification                  .           .          .          .                         .           .          .
+Data Dependencies                21          21          .                                    .           .          .
+Flow Dependencies                15          15          .                                    .           .          .
+Initialization                   29          18          .                                    .          11          .
+Non-Aliasing                      .           .          .                                    .           .          .
+Run-time Checks                 221           .          .    221 (CVC4 0%, Trivial 5%, Z3 95%)           .          .
+Assertions                       30           .          .                              30 (Z3)           .          .
+Functional Contracts             42           .          .                              42 (Z3)           .          .
+LSP Verification                  .           .          .                                    .           .          .
+Termination                       4           .          .                               4 (Z3)           .          .
+Concurrency                       .           .          .                                    .           .          .
 ----------------------------------------------------------------------------------------------------------------------
-Total                           372    54 (15%)          .          .                 307 (83%)     11 (3%)          .
+Total                           362    54 (15%)          .                            297 (82%)     11 (3%)          .
 
 
-max steps used for successful proof: 91430
+max steps used for successful proof: 14009
 
 Analyzed 5 units
 in unit saatana, 1 subprograms and packages out of 1 analyzed
@@ -62,11 +64,6 @@ absence of run-time errors of Saatana.Crypto.To_Unsigned depends on
   absence of run-time errors of Interfaces.Shift_Left
 in unit saatana-crypto-lemmas, 1 subprograms and packages out of 1 analyzed
   Saatana.Crypto.Lemmas at saatana-crypto-lemmas.ads:10 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (6 checks)
-absence of run-time errors of Saatana.Crypto.Lemmas depends on
-  effects on parameters and Global variables of Interfaces.Shift_Left
-  effects on parameters and Global variables of Interfaces.Shift_Right
-  absence of run-time errors of Interfaces.Shift_Left
-  absence of run-time errors of Interfaces.Shift_Right
 in unit saatana-crypto-phelix, 21 subprograms and packages out of 21 analyzed
   Saatana.Crypto.Phelix at saatana-crypto-phelix.ads:48 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 absence of run-time errors of Saatana.Crypto.Phelix fully established
@@ -179,7 +176,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Encrypt_Packet depends on
 the postcondition of Saatana.Crypto.Phelix.Exclusive_Or fully established
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Exclusive_Or fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Exclusive_Or fully established
-  Saatana.Crypto.Phelix.Finalize at saatana-crypto-phelix.ads:303 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (38 checks)
+  Saatana.Crypto.Phelix.Finalize at saatana-crypto-phelix.ads:303 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (33 checks)
    suppressed messages:
     saatana-crypto-phelix.adb:333:60: "Tmp" is initialized in a loop which writes to the whole range
     saatana-crypto-phelix.adb:351:62: "Tmp" is initialized in a loop which writes to the whole range
@@ -207,10 +204,8 @@ absence of run-time errors of Saatana.Crypto.Phelix.H depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Rotate_Left
   Saatana.Crypto.Phelix.Key_Size_32Predicate at saatana-crypto-phelix.ads:60 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (1 checks)
-effects on parameters and Global variables of Saatana.Crypto.Phelix.Key_Size_32Predicate fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Key_Size_32Predicate fully established
   Saatana.Crypto.Phelix.MAC_Size_32Predicate at saatana-crypto-phelix.ads:57 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (1 checks)
-effects on parameters and Global variables of Saatana.Crypto.Phelix.MAC_Size_32Predicate fully established
 absence of run-time errors of Saatana.Crypto.Phelix.MAC_Size_32Predicate fully established
   Saatana.Crypto.Phelix.Process_AAD at saatana-crypto-phelix.ads:225 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (16 checks)
 the postcondition of Saatana.Crypto.Phelix.Process_AAD depends on
@@ -226,7 +221,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Process_AAD depends on
   effects on parameters and Global variables of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
-  Saatana.Crypto.Phelix.Setup_Key at saatana-crypto-phelix.ads:182 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (28 checks)
+  Saatana.Crypto.Phelix.Setup_Key at saatana-crypto-phelix.ads:182 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (25 checks)
 the postcondition of Saatana.Crypto.Phelix.Setup_Key depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -243,7 +238,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Setup_Key depends on
   Saatana.Crypto.Phelix.Setup_Key_Called at saatana-crypto-phelix.ads:88 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Setup_Key_Called fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Setup_Key_Called fully established
-  Saatana.Crypto.Phelix.Setup_Nonce at saatana-crypto-phelix.ads:201 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (9 checks)
+  Saatana.Crypto.Phelix.Setup_Nonce at saatana-crypto-phelix.ads:201 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (7 checks)
 the postcondition of Saatana.Crypto.Phelix.Setup_Nonce depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
