@@ -1,9 +1,9 @@
-name: Proof Linux
+name: "Proof Linux"
 
 on:
   schedule:
     # Run twice daily
-    - cron: '42 0,12 * * *'
+    - cron: '2,12,22,32,42,52 * * * *'
 
 jobs:
   build:
@@ -13,7 +13,8 @@ jobs:
     strategy:
       matrix:
         tag: # Those are alire's dockerhub alire/gnat:tag machines
-          - community-current
+          #- centos-community-2020
+          - community-2020
         # SPARK is only available on community installation
 
     steps:
@@ -23,12 +24,12 @@ jobs:
         run: docker pull alire/gnat:${{ matrix.tag }}
       - name: Build
         run: >
-          docker run -v${PWD}:/security -w /security
+          docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-build.sh
       - name: Proof
         run: >
-          docker run -v${PWD}:/security -w /security
+          docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-proof.sh
       - name: Commit and push prove logs to artifacts
@@ -53,7 +54,7 @@ jobs:
           path: gnatprove-output.tar
       - name: Run tests
         run: >
-          docker run -v${PWD}:/security -w /security
+          docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-test.sh
       - name: Commit and push test results to artifacts

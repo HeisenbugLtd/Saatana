@@ -1,4 +1,4 @@
-name: Build Linux
+name: "Build Linux"
 
 on:
   push:
@@ -17,10 +17,8 @@ jobs:
     strategy:
       matrix:
         tag: # Those are alire's dockerhub alire/gnat:tag machines
-          - centos-latest-community-2019
-          - community-current
-          - debian-stable
-          - ubuntu-lts
+          #- centos-community-2020
+          - community-2020
 
     steps:
       - name: Check out repository
@@ -29,11 +27,11 @@ jobs:
         run: docker pull alire/gnat:${{ matrix.tag }}
       - name: Build
         run: >
-          docker run -v${PWD}:/security -w /security
+          docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-build.sh
       - name: Run tests
         run: >
-          docker run -v${PWD}:/security -w /security
+          docker run -v${PWD}:/saatana -w /saatana
           -e "BRANCH=${{ github.base_ref }}"
           alire/gnat:${{ matrix.tag }} .github/scripts/ci-test.sh

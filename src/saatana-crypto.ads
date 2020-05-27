@@ -61,53 +61,10 @@ is
                                      2 => Byte (Shift_Right (Value, 16) mod 256),
                                      3 => Byte (Shift_Right (Value, 24) mod 256)));
 
-   --
-   --  Initialized_Until
-   --
-   --  Proof function.
-   --
-   --  Supposed to show that the array given in the "Stream" argument is
-   --  initialized from the beginning until the given index "Last".
-   --
-   --  NOTE: This function is essentially True for all language purposes, "Byte"
-   --        can never be invalid as it covers the whole range, even if
-   --        uninitialized.
-   --
-   --  The idea of this proof function is to show intent and have reasonable
-   --  confidence in Loop_Invariants and Assert pragmas that arrays are indeed
-   --  being fully initialized.
-   --
-   --  It is intentional that we specify in the pre-condition that the stream
-   --  is not an empty array (i.e. 'Length > 0), because the function is
-   --  intended to be used in loops that write to the whole array.  If the array
-   --  has no elements, no write will be done and we should never need to prove
-   --  that.
-   --
-   --  It is declared here specifically for the purpose to serve as primitive
-   --  operation on all stream types (see below for those derived from
-   --  General_Stream) to eliminate the need to declare type converting
-   --  functions for each stream type which would require a lot of duplication,
-   --  because both pre- and post-conditions would need to be repeated for each
-   --  instance.
-   --
-   pragma Warnings (GNATProve, Off, "attribute Valid is assumed to return True",
-                    Reason => "Use of 'Valid instead of membership test is intentional.");
-   function Initialized_Until (Stream : in General_Stream;
-                               Last   : in Stream_Index) return Boolean is
-     (for all X of Stream (Stream'First .. Last) => X'Valid) with
-     Ghost   => True,
-     Pre     => Stream'Length > 0 and then Last in Stream'Range,
-     Global  => null,
-     Depends => (Initialized_Until'Result => (Stream,
-                                              Last)),
-     Post    => (Initialized_Until'Result =
-                 (for all X of Stream (Stream'First .. Last) => X in Byte));
-   pragma Warnings (GNATProve, Off, "attribute Valid is assumed to return True");
-
    --  Provide some basic primitives.
-   type Ciphertext_Stream is new General_Stream;
+   type Ciphertext_Stream is new General_Stream with Relaxed_Initialization;
    type Key_Stream        is new General_Stream;
-   type Plaintext_Stream  is new General_Stream;
+   type Plaintext_Stream  is new General_Stream with Relaxed_Initialization;
    type MAC_Stream        is new General_Stream;
    type Nonce_Stream      is new General_Stream;
 

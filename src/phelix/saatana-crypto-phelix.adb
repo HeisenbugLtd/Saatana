@@ -123,8 +123,6 @@ package body Saatana.Crypto.Phelix is
 
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Plaintext_Stream'(To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (Initialized_Until (Stream => Destination,
-                                              Last   => Dst_Nxt - 1));
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -145,19 +143,10 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1                                       and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (Initialized_Until (Stream => Destination,
-                                                   Last   => Dst_Nxt - 1));
+         pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
+                                  Destination (I)'Initialized);
       end loop;
-
-      --  Assert that Dst_Idx is now past the end of the array, so we have a
-      --  reasonable proof about the initialization of Destination - which has
-      --  only been manually justified.
-      pragma Assert (Dst_Idx > Destination'Last);
    end Decrypt_Bytes;
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Destination"" might not be initialized",
-                    """Destination"" is initialized in a loop (up to Dst_Nxt - 1)");
 
    --
    --  Decrypt_Packet
@@ -223,8 +212,6 @@ package body Saatana.Crypto.Phelix is
             Cipher_Text := The_Key xor Plain_Text;
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Ciphertext_Stream'(To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (Initialized_Until (Stream => Destination,
-                                              Last   => Dst_Nxt - 1));
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -244,19 +231,10 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1
                                 and Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1
                                 and Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (Initialized_Until (Stream => Destination,
-                                                   Last   => Dst_Nxt - 1));
+         pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
+                                  Destination (I)'Initialized);
       end loop;
-
-      --  Assert that Dst_Idx is now past the end of the array, so we have a
-      --  reasonable proof about the initialization of Destination - which has
-      --  only been manually justified.
-      pragma Assert (Dst_Idx > Destination'Last);
    end Encrypt_Bytes;
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Destination"" might not be initialized",
-                    """Destination"" is initialized in a loop (up to Dst_Nxt - 1)");
 
    --
    --  Encrypt_Packet
@@ -304,7 +282,8 @@ package body Saatana.Crypto.Phelix is
       MAC_WORDS  : constant := MAC_INIT_CNT + MAC_WORD_CNT;
       Plain_Text : Word_32;
       Mac_Index  : Stream_Index;
-      Tmp        : MAC_Stream (0 .. MAC_WORDS * 4 - 1);
+      Tmp        : MAC_Stream (0 .. MAC_WORDS * 4 - 1)
+        with Relaxed_Initialization;
       MAC_OFFSET : constant := Tmp'First + MAC_INIT_CNT * 4;
    begin
       Plain_Text := This.CS.Msg_Len mod 4;
@@ -329,9 +308,6 @@ package body Saatana.Crypto.Phelix is
             begin
                Mac_Index := Tmp'First + Stream_Offset (K) * 4;
                Tmp (Mac_Index .. Mac_Index + 3) := To_Stream (The_Key xor Plain_Text);
-
-               pragma Assert (Initialized_Until (Stream => Tmp,
-                                                 Last   => Mac_Index + 3));
             end Store_MAC_Word;
 
             H (Z              => This.CS.Z,
@@ -348,12 +324,9 @@ package body Saatana.Crypto.Phelix is
                                 Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
                                 Mac_Index = Tmp'First + Stream_Offset (K) * 4 and
                                 Mac_Index + 3 in Tmp'Range);
-         pragma Loop_Invariant (Initialized_Until (Stream => Tmp,
-                                                   Last   => Mac_Index + 3));
+         pragma Loop_Invariant (for all I in Tmp'First .. Mac_Index + 3 =>
+                                  Tmp (I)'Initialized);
       end loop;
-
-      pragma Assert (Tmp'First + Mac_Index + 3 = Tmp'Last);
-      --  Reasonable proof that we wrote all Tmp words.
 
       --  Copy the relevant bits back to MAC.
       Mac := Tmp (MAC_OFFSET .. MAC_OFFSET - 1 + Mac'Length);
@@ -363,10 +336,6 @@ package body Saatana.Crypto.Phelix is
       --  Nonce as invalid.
       This.Setup_Phase := Key_Has_Been_Setup;
    end Finalize;
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Tmp"" might not be initialized",
-                    """Tmp"" is initialized in a loop which writes to the whole range");
 
    --
    --  H

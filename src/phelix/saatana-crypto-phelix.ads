@@ -122,15 +122,14 @@ is
                             Header,
                             Payload)),
      Pre     => (Setup_Key_Called (This)                        and then
+                 Header'Initialized                             and then
+                 Payload'Initialized                            and then
                  Header'Length + Payload'Length = Packet'Length and then
                  Nonce'Length = Max_Nonce_Size / 8              and then
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
-                 not Setup_Nonce_Called (This));
-   pragma Annotate (GNATprove,
-                    Intentional,
-                    """Packet"" might not be initialized",
-                    "Full assignment is split between Msg_Header, and Msg_Body in Encrypt_Bytes.");
+                 not Setup_Nonce_Called (This)                         and then
+                 Packet'Initialized);
 
    --
    --  Decrypt_Packet
@@ -164,15 +163,14 @@ is
                             Header,
                             Payload)),
      Pre     => (Setup_Key_Called (This)                        and then
+                 Header'Initialized                             and then
+                 Payload'Initialized                            and then
                  Header'Length + Payload'Length = Packet'Length and then
                  Nonce'Length = Max_Nonce_Size / 8              and then
                  Mac'Length = Stream_Count (Ctx_Mac_Size (This) / 8)),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old) and then
-                 not Setup_Nonce_Called (This));
-   pragma Annotate (GNATprove,
-                    Intentional,
-                    """Packet"" might not be initialized",
-                    "Full assignment is split between Msg_Header, and Msg_Body in Decrypt_Bytes.");
+                 not Setup_Nonce_Called (This)                         and then
+                 Packet'Initialized);
 
    --
    --  Setup_Key
@@ -227,7 +225,8 @@ is
      Global  => null,
      Depends => (This => (This,
                           Aad)),
-     Pre     => (Setup_Nonce_Called (This)    and then
+     Pre     => (Aad'Initialized              and then
+                 Setup_Nonce_Called (This)    and then
                  Ctx_Msg_Len (This) = 0       and then --  AAD processing must be done first
                  Ctx_AAD_Len (This) mod 4 = 0 and then --  can only make ONE sub-word call!
                  Ctx_AAD_Len (This) < Stream_Count'Last - Aad'Length),
@@ -256,7 +255,8 @@ is
                  Destination => (This,
                                  Destination,
                                  Source)),
-     Pre     => (Source'Length = Destination'Length and then
+     Pre     => (Source'Initialized                 and then
+                 Source'Length = Destination'Length and then
                  Setup_Nonce_Called (This)          and then
                  Ctx_Msg_Len (This) mod 4 = 0), --  Can only make ONE sub-word call!
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                             and then
@@ -264,7 +264,8 @@ is
                  Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                       and then
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Word_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                     and then
-                 Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
+                 Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old)                                     and then
+                 Destination'Initialized);
 
    --
    --  Decrypt_Bytes
@@ -284,7 +285,8 @@ is
                  Destination => (Destination,
                                  This,
                                  Source)),
-     Pre     => (Source'Length = Destination'Length and then
+     Pre     => (Source'Initialized                 and then
+                 Source'Length = Destination'Length and then
                  Setup_Nonce_Called (This)          and then
                  Ctx_Msg_Len (This) mod 4 = 0),
      Post    => (Setup_Key_Called (This) = Setup_Key_Called (This'Old)                             and then
@@ -292,7 +294,8 @@ is
                  Ctx_AAD_Len (This) = Ctx_AAD_Len (This'Old)                                       and then
                  Ctx_Msg_Len (This) = Ctx_Msg_Len (This'Old) + Word_32 (Source'Length mod 2 ** 32) and then
                  Ctx_Key_Size (This) = Ctx_Key_Size (This'Old)                                     and then
-                 Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old));
+                 Ctx_Mac_Size (This) = Ctx_Mac_Size (This'Old)                                     and then
+                 Destination'Initialized);
 
    --
    --  Finalize
