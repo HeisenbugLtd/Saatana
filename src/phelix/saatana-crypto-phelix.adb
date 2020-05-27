@@ -154,10 +154,6 @@ package body Saatana.Crypto.Phelix is
                      Initialized_Until (Stream => Destination,
                                         Last   => Destination'Last));
    end Decrypt_Bytes;
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Destination"" might not be initialized",
-                    """Destination"" is initialized in a loop (up to Dst_Nxt - 1)");
 
    --
    --  Decrypt_Packet
@@ -253,10 +249,6 @@ package body Saatana.Crypto.Phelix is
                      Initialized_Until (Stream => Destination,
                                         Last   => Destination'Last));
    end Encrypt_Bytes;
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Destination"" might not be initialized",
-                    """Destination"" is initialized in a loop (up to Dst_Nxt - 1)");
 
    --
    --  Encrypt_Packet

@@ -96,9 +96,9 @@ is
                                       Stream (I)'Initialized)));
 
    --  Provide some basic primitives.
-   type Ciphertext_Stream is new General_Stream;
+   type Ciphertext_Stream is new General_Stream with Relaxed_Initialization;
    type Key_Stream        is new General_Stream;
-   type Plaintext_Stream  is new General_Stream;
+   type Plaintext_Stream  is new General_Stream with Relaxed_Initialization;
    type MAC_Stream        is new General_Stream;
    type Nonce_Stream      is new General_Stream;
 
