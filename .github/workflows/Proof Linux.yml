@@ -1,4 +1,4 @@
-name: Proof Linux
+name: "Proof Linux"
 
 on:
   schedule:
