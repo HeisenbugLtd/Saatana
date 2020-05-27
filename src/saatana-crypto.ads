@@ -90,19 +90,18 @@ is
    --  because both pre- and post-conditions would need to be repeated for each
    --  instance.
    --
-   pragma Warnings (GNATProve, Off, "attribute Valid is assumed to return True",
-                    Reason => "Use of 'Valid instead of membership test is intentional.");
    function Initialized_Until (Stream : in General_Stream;
                                Last   : in Stream_Index) return Boolean is
-     (for all X of Stream (Stream'First .. Last) => X'Valid) with
-     Ghost   => True,
-     Pre     => Stream'Length > 0 and then Last in Stream'Range,
-     Global  => null,
-     Depends => (Initialized_Until'Result => (Stream,
-                                              Last)),
-     Post    => (Initialized_Until'Result =
-                 (for all X of Stream (Stream'First .. Last) => X in Byte));
-   pragma Warnings (GNATProve, Off, "attribute Valid is assumed to return True");
+     (for all I in Stream'First .. Last => Stream (I)'Initialized) with
+     Relaxed_Initialization => Stream,
+     Ghost                  => True,
+     Pre                    => Stream'Length > 0 and then Last in Stream'Range,
+     Global                 => null,
+     Depends                => (Initialized_Until'Result => (Stream,
+                                                             Last)),
+     Post                   => ((if Initialized_Until'Result then
+                                   (for all I in Stream'First .. Last =>
+                                      Stream (I)'Initialized)));
 
    --  Provide some basic primitives.
    type Ciphertext_Stream is new General_Stream;
