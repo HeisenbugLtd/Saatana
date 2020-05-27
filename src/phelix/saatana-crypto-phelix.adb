@@ -153,6 +153,9 @@ package body Saatana.Crypto.Phelix is
       --  reasonable proof about the initialization of Destination - which has
       --  only been manually justified.
       pragma Assert (Dst_Idx > Destination'Last);
+      pragma Assert (Destination'Length = 0 or else
+                     Initialized_Until (Stream => Destination,
+                                        Last   => Destination'Last));
    end Decrypt_Bytes;
    pragma Annotate (GNATprove,
                     False_Positive,
