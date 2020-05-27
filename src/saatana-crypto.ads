@@ -66,16 +66,8 @@ is
    --
    --  Proof function.
    --
-   --  Supposed to show that the array given in the "Stream" argument is
-   --  initialized from the beginning until the given index "Last".
-   --
-   --  NOTE: This function is essentially True for all language purposes, "Byte"
-   --        can never be invalid as it covers the whole range, even if
-   --        uninitialized.
-   --
-   --  The idea of this proof function is to show intent and have reasonable
-   --  confidence in Loop_Invariants and Assert pragmas that arrays are indeed
-   --  being fully initialized.
+   --  Shows that the array given in the "Stream" argument is initialized from
+   --  the beginning until the given index "Last".
    --
    --  It is intentional that we specify in the pre-condition that the stream
    --  is not an empty array (i.e. 'Length > 0), because the function is
