@@ -148,11 +148,6 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Initialized_Until (Stream => Destination,
                                                    Last   => Dst_Nxt - 1));
       end loop;
-
-      --  Prove full initialization of Destination.
-      pragma Assert (Destination'Length = 0 or else
-                     Initialized_Until (Stream => Destination,
-                                        Last   => Destination'Last));
    end Decrypt_Bytes;
 
    --
@@ -243,11 +238,6 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Initialized_Until (Stream => Destination,
                                                    Last   => Dst_Nxt - 1));
       end loop;
-
-      --  Prove full initialization of Destination.
-      pragma Assert (Destination'Length = 0 or else
-                     Initialized_Until (Stream => Destination,
-                                        Last   => Destination'Last));
    end Encrypt_Bytes;
 
    --
@@ -296,7 +286,8 @@ package body Saatana.Crypto.Phelix is
       MAC_WORDS  : constant := MAC_INIT_CNT + MAC_WORD_CNT;
       Plain_Text : Word_32;
       Mac_Index  : Stream_Index;
-      Tmp        : MAC_Stream (0 .. MAC_WORDS * 4 - 1);
+      Tmp        : MAC_Stream (0 .. MAC_WORDS * 4 - 1)
+        with Relaxed_Initialization;
       MAC_OFFSET : constant := Tmp'First + MAC_INIT_CNT * 4;
    begin
       Plain_Text := This.CS.Msg_Len mod 4;
@@ -344,9 +335,6 @@ package body Saatana.Crypto.Phelix is
                                                    Last   => Mac_Index + 3));
       end loop;
 
-      pragma Assert (Tmp'First + Mac_Index + 3 = Tmp'Last);
-      --  Reasonable proof that we wrote all Tmp words.
-
       --  Copy the relevant bits back to MAC.
       Mac := Tmp (MAC_OFFSET .. MAC_OFFSET - 1 + Mac'Length);
 
@@ -355,10 +343,6 @@ package body Saatana.Crypto.Phelix is
       --  Nonce as invalid.
       This.Setup_Phase := Key_Has_Been_Setup;
    end Finalize;
-   pragma Annotate (GNATprove,
-                    False_Positive,
-                    """Tmp"" might not be initialized",
-                    """Tmp"" is initialized in a loop which writes to the whole range");
 
    --
    --  H
