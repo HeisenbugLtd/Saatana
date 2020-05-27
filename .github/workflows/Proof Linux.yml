@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         tag: # Those are alire's dockerhub alire/gnat:tag machines
+          #- centos-community-2020
           - community-2020
         # SPARK is only available on community installation
 
