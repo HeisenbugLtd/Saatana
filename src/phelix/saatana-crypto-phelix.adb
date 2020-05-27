@@ -248,10 +248,10 @@ package body Saatana.Crypto.Phelix is
                                                    Last   => Dst_Nxt - 1));
       end loop;
 
-      --  Assert that Dst_Idx is now past the end of the array, so we have a
-      --  reasonable proof about the initialization of Destination - which has
-      --  only been manually justified.
-      pragma Assert (Dst_Idx > Destination'Last);
+      --  Prove full initialization of Destination.
+      pragma Assert (Destination'Length = 0 or else
+                     Initialized_Until (Stream => Destination,
+                                        Last   => Destination'Last));
    end Encrypt_Bytes;
    pragma Annotate (GNATprove,
                     False_Positive,
