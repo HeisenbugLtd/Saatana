@@ -3,7 +3,7 @@ name: "Proof Linux"
 on:
   schedule:
     # Run twice daily
-    - cron: '2,12,22,32,42,52 * * * *'
+    - cron: '42 0,12 * * *'
 
 jobs:
   build:
