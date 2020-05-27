@@ -61,40 +61,6 @@ is
                                      2 => Byte (Shift_Right (Value, 16) mod 256),
                                      3 => Byte (Shift_Right (Value, 24) mod 256)));
 
-   --
-   --  Initialized_Until
-   --
-   --  Proof function.
-   --
-   --  Shows that the array given in the "Stream" argument is initialized from
-   --  the beginning until the given index "Last".
-   --
-   --  It is intentional that we specify in the pre-condition that the stream
-   --  is not an empty array (i.e. 'Length > 0), because the function is
-   --  intended to be used in loops that write to the whole array.  If the array
-   --  has no elements, no write will be done and we should never need to prove
-   --  that.
-   --
-   --  It is declared here specifically for the purpose to serve as primitive
-   --  operation on all stream types (see below for those derived from
-   --  General_Stream) to eliminate the need to declare type converting
-   --  functions for each stream type which would require a lot of duplication,
-   --  because both pre- and post-conditions would need to be repeated for each
-   --  instance.
-   --
-   function Initialized_Until (Stream : in General_Stream;
-                               Last   : in Stream_Index) return Boolean is
-     (for all I in Stream'First .. Last => Stream (I)'Initialized) with
-     Relaxed_Initialization => Stream,
-     Ghost                  => True,
-     Pre                    => Stream'Length > 0 and then Last in Stream'Range,
-     Global                 => null,
-     Depends                => (Initialized_Until'Result => (Stream,
-                                                             Last)),
-     Post                   => ((if Initialized_Until'Result then
-                                   (for all I in Stream'First .. Last =>
-                                      Stream (I)'Initialized)));
-
    --  Provide some basic primitives.
    type Ciphertext_Stream is new General_Stream with Relaxed_Initialization;
    type Key_Stream        is new General_Stream;

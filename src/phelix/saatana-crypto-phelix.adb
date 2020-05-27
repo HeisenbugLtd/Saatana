@@ -123,8 +123,6 @@ package body Saatana.Crypto.Phelix is
 
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Plaintext_Stream'(To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (Initialized_Until (Stream => Destination,
-                                              Last   => Dst_Nxt - 1));
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -145,8 +143,8 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1                                       and
                                 Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
                                 Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (Initialized_Until (Stream => Destination,
-                                                   Last   => Dst_Nxt - 1));
+         pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
+                                  Destination (I)'Initialized);
       end loop;
    end Decrypt_Bytes;
 
@@ -214,8 +212,6 @@ package body Saatana.Crypto.Phelix is
             Cipher_Text := The_Key xor Plain_Text;
             Destination (Dst_Idx .. Dst_Nxt - 1) :=
               Ciphertext_Stream'(To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
-            pragma Assert (Initialized_Until (Stream => Destination,
-                                              Last   => Dst_Nxt - 1));
 
             H (Z              => This.CS.Z,
                Plaintext_Word => Plain_Text,
@@ -235,8 +231,8 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1
                                 and Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1
                                 and Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (Initialized_Until (Stream => Destination,
-                                                   Last   => Dst_Nxt - 1));
+         pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
+                                  Destination (I)'Initialized);
       end loop;
    end Encrypt_Bytes;
 
@@ -312,9 +308,6 @@ package body Saatana.Crypto.Phelix is
             begin
                Mac_Index := Tmp'First + Stream_Offset (K) * 4;
                Tmp (Mac_Index .. Mac_Index + 3) := To_Stream (The_Key xor Plain_Text);
-
-               pragma Assert (Initialized_Until (Stream => Tmp,
-                                                 Last   => Mac_Index + 3));
             end Store_MAC_Word;
 
             H (Z              => This.CS.Z,
@@ -331,8 +324,8 @@ package body Saatana.Crypto.Phelix is
                                 Mac'Length = Stream_Count (This.KS.MAC_Size / 8) and
                                 Mac_Index = Tmp'First + Stream_Offset (K) * 4 and
                                 Mac_Index + 3 in Tmp'Range);
-         pragma Loop_Invariant (Initialized_Until (Stream => Tmp,
-                                                   Last   => Mac_Index + 3));
+         pragma Loop_Invariant (for all I in Tmp'First .. Mac_Index + 3 =>
+                                  Tmp (I)'Initialized);
       end loop;
 
       --  Copy the relevant bits back to MAC.
