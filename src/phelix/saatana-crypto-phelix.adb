@@ -82,77 +82,74 @@ package body Saatana.Crypto.Phelix is
                             Source      : in     Ciphertext_Stream;
                             Destination :    out Plaintext_Stream)
    is
-      pragma Assume (Source'First in Stream_Index);
-      pragma Assume (Destination'First in Stream_Index);
-      --  FIXME: These should be implicit due to the type definition and thus
-      --         easy to prove, but without these assumptions SPARK comes up
-      --         with a "range check might fail" below with the impossible:
-      --  [Counterexample] Source'First = -4611686018427387905 and ...
-      --                   Source'Last = -4611686018427387906
-      --  [Counterexample] Destination'First = -4611686018427387905
-      --  First of all Stream_Index is not negative and secondly its range is
-      --  significanter smaller than Stream_Offset.
-      J          : Mod_8;
-      The_Key    : Word_32;
-      Plain_Text : Word_32;
-      Msg_Len    : Stream_Count  := Source'Length;
-      Src_Idx    : Stream_Offset := Source'First;
-      Dst_Idx    : Stream_Offset := Destination'First;
-      Dst_Nxt    : Stream_Offset;
+      Msg_Len : Stream_Count := Source'Length;
    begin
       This.CS.Msg_Len := This.CS.Msg_Len + Word_32 (Msg_Len mod 2 ** 32);
       This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor; --  do the AAD xor, if needed
       This.CS.AAD_Xor := 0; --  Next time, the xor will be a nop
 
-      while Msg_Len > 0 loop
-         Decrypt_Word :
+      if Source'Length = 0 then
+         Destination := (others => 0); --  Ensure "initialization".
+      else
          declare
-            Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
+            J          : Mod_8;
+            The_Key    : Word_32;
+            Plain_Text : Word_32;
+            Src_Idx    : Stream_Offset := Source'First;
+            Dst_Idx    : Stream_Offset := Destination'First;
+            Dst_Nxt    : Stream_Offset;
          begin
-            Msg_Len := Msg_Len - Remaining_Bytes;
-            Dst_Nxt := Dst_Idx + Remaining_Bytes;
+            while Msg_Len > 0 loop
+               Decrypt_Word :
+               declare
+                  Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
+               begin
+                  Msg_Len := Msg_Len - Remaining_Bytes;
+                  Dst_Nxt := Dst_Idx + Remaining_Bytes;
 
-            J := Mod_8 (This.CS.I mod 8);
-            H (Z              => This.CS.Z,
-               Plaintext_Word => 0,
-               Key_Word       => This.KS.X_0 (J));
+                  J := Mod_8 (This.CS.I mod 8);
+                  H (Z              => This.CS.Z,
+                     Plaintext_Word => 0,
+                     Key_Word       => This.KS.X_0 (J));
 
-            The_Key := This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
+                  The_Key := This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
 
-            --  If there was a partial word, the resulting Plain_Text needs
-            --  to be masked as it is used in the further derivation of new Z
-            --  values. Contrary to the C reference implementation which reads
-            --  undefined bytes at the end of the stream, here the same result
-            --  is achieved by masking the Key_Stream value, because
-            --  To_Unsigned already returns zero for the bytes.
-            Plain_Text :=
-              To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1)) xor (The_Key and MASK (Remaining_Bytes));
+                  --  If there was a partial word, the resulting Plain_Text needs
+                  --  to be masked as it is used in the further derivation of new Z
+                  --  values. Contrary to the C reference implementation which reads
+                  --  undefined bytes at the end of the stream, here the same result
+                  --  is achieved by masking the Key_Stream value, because
+                  --  To_Unsigned already returns zero for the bytes.
+                  Plain_Text :=
+                    To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1)) xor (The_Key and MASK (Remaining_Bytes));
 
-            Destination (Dst_Idx .. Dst_Nxt - 1) :=
-              Plaintext_Stream'(To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
+                  Destination (Dst_Idx .. Dst_Nxt - 1) :=
+                    Plaintext_Stream'(To_Stream (Plain_Text)) (0 .. Remaining_Bytes - 1);
 
-            H (Z              => This.CS.Z,
-               Plaintext_Word => Plain_Text,
-               Key_Word       => This.KS.X_1 (J) + This.CS.I);
-            This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); --  Save The "old" Value
+                  H (Z              => This.CS.Z,
+                     Plaintext_Word => Plain_Text,
+                     Key_Word       => This.KS.X_1 (J) + This.CS.I);
+                  This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); --  Save The "old" Value
 
-            This.CS.I := This.CS.I + 1;
-            Src_Idx   := Src_Idx + Remaining_Bytes;
-            Dst_Idx   := Dst_Nxt;
-         end Decrypt_Word;
+                  This.CS.I := This.CS.I + 1;
+                  Src_Idx   := Src_Idx + Remaining_Bytes;
+                  Dst_Idx   := Dst_Nxt;
+               end Decrypt_Word;
 
-         pragma Loop_Variant (Decreases => Msg_Len,
-                              Increases => This.CS.I,
-                              Increases => This.CS.Msg_Len,
-                              Increases => Src_Idx,
-                              Increases => Dst_Idx,
-                              Increases => Dst_Nxt);
-         pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1                                       and
-                                Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
-                                Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
-                                  Destination (I)'Initialized);
-      end loop;
+               pragma Loop_Variant (Decreases => Msg_Len,
+                                    Increases => This.CS.I,
+                                    Increases => This.CS.Msg_Len,
+                                    Increases => Src_Idx,
+                                    Increases => Dst_Idx,
+                                    Increases => Dst_Nxt);
+               pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1                                       and
+                                        Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1 and
+                                          Dst_Nxt = Dst_Idx);
+               pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
+                                        Destination (I)'Initialized);
+            end loop;
+         end;
+      end if;
 
       --  This assertion is not really needed, it is added here to be explicitly
       --  reason about the initialization of the output.
@@ -198,69 +195,65 @@ package body Saatana.Crypto.Phelix is
                             Source      : in     Plaintext_Stream;
                             Destination :    out Ciphertext_Stream)
    is
-      pragma Assume (Source'First in Stream_Index);
-      pragma Assume (Destination'First in Stream_Index);
-      --  FIXME: These should be implicit due to the type definition and thus
-      --         easy to prove, but without these assumptions SPARK comes up
-      --         with a "range check might fail" below with the impossible:
-      --  [Counterexample] Source'First = -4611686018427387905 and ...
-      --                   Source'Last = -4611686018427387906
-      --  [Counterexample] Destination'First = -4611686018427387905
-      --  First of all Stream_Index is not negative and secondly its range is
-      --  significanter smaller than Stream_Offset.
-
-      J           : Mod_8;
-      The_Key     : Word_32;
-      Plain_Text  : Word_32;
-      Cipher_Text : Word_32;
-      Msg_Len     : Stream_Count  := Source'Length;
-      Src_Idx     : Stream_Offset := Source'First;
-      Dst_Idx     : Stream_Offset := Destination'First;
-      Dst_Nxt     : Stream_Offset;
+      Msg_Len : Stream_Count := Source'Length;
    begin
       This.CS.Msg_Len := This.CS.Msg_Len + Word_32 (Msg_Len mod 2 ** 32);
       This.CS.Z (1) := This.CS.Z (1) xor This.CS.AAD_Xor; --  do the AAD xor, if needed
       This.CS.AAD_Xor := 0; --  Next time, the xor will be a nop
 
-      while Msg_Len > 0 loop
-         Encrypt_Word :
+      if Source'Length = 0 then
+         Destination := (others => 0); -- Ensure "initialization".
+      else
          declare
-            Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
+            J           : Mod_8;
+            The_Key     : Word_32;
+            Plain_Text  : Word_32;
+            Cipher_Text : Word_32;
+            Src_Idx     : Stream_Offset := Source'First;
+            Dst_Idx     : Stream_Offset := Destination'First;
+            Dst_Nxt     : Stream_Offset;
          begin
-            Msg_Len := Msg_Len - Remaining_Bytes;
-            Dst_Nxt := Dst_Idx + Remaining_Bytes;
+            while Msg_Len > 0 loop
+               Encrypt_Word :
+               declare
+                  Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Msg_Len, 4);
+               begin
+                  Msg_Len := Msg_Len - Remaining_Bytes;
+                  Dst_Nxt := Dst_Idx + Remaining_Bytes;
 
-            J := Mod_8 (This.CS.I mod 8);
-            H (Z              => This.CS.Z,
-               Plaintext_Word => 0,
-               Key_Word       => This.KS.X_0 (J));
-            The_Key     := This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
-            Plain_Text  := To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1));
-            Cipher_Text := The_Key xor Plain_Text;
-            Destination (Dst_Idx .. Dst_Nxt - 1) :=
-              Ciphertext_Stream'(To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
+                  J := Mod_8 (This.CS.I mod 8);
+                  H (Z              => This.CS.Z,
+                     Plaintext_Word => 0,
+                     Key_Word       => This.KS.X_0 (J));
+                  The_Key     := This.CS.Z (OLD_Z_REG) + This.CS.Old_Z (Old_State_Words (This.CS.I mod 4));
+                  Plain_Text  := To_Unsigned (Source (Src_Idx .. Src_Idx + Remaining_Bytes - 1));
+                  Cipher_Text := The_Key xor Plain_Text;
+                  Destination (Dst_Idx .. Dst_Nxt - 1) :=
+                    Ciphertext_Stream'(To_Stream (Cipher_Text)) (0 .. Remaining_Bytes - 1);
 
-            H (Z              => This.CS.Z,
-               Plaintext_Word => Plain_Text,
-               Key_Word       => This.KS.X_1 (J) + This.CS.I);
-            This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); --  Save The "old" Value
+                  H (Z              => This.CS.Z,
+                     Plaintext_Word => Plain_Text,
+                     Key_Word       => This.KS.X_1 (J) + This.CS.I);
+                  This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); --  Save The "old" Value
 
-            This.CS.I := This.CS.I + 1;
-            Src_Idx  := Src_Idx + Remaining_Bytes;
-            Dst_Idx  := Dst_Nxt;
-         end Encrypt_Word;
+                  This.CS.I := This.CS.I + 1;
+                  Src_Idx  := Src_Idx + Remaining_Bytes;
+                  Dst_Idx  := Dst_Nxt;
+               end Encrypt_Word;
 
-         pragma Loop_Variant (Decreases => Msg_Len,
-                              Increases => This.CS.I,
-                              Increases => Src_Idx,
-                              Increases => Dst_Idx,
-                              Increases => Dst_Nxt);
-         pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1
-                                and Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1
-                                and Dst_Nxt = Dst_Idx);
-         pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
-                                  Destination (I)'Initialized);
-      end loop;
+               pragma Loop_Variant (Decreases => Msg_Len,
+                                    Increases => This.CS.I,
+                                    Increases => Src_Idx,
+                                    Increases => Dst_Idx,
+                                    Increases => Dst_Nxt);
+               pragma Loop_Invariant (Src_Idx = Source'Last - Msg_Len + 1
+                                      and Dst_Idx >= Destination'First and Dst_Idx = Destination'Last - Msg_Len + 1
+                                      and Dst_Nxt = Dst_Idx);
+               pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
+                                        Destination (I)'Initialized);
+            end loop;
+         end;
+      end if;
 
       --  This assertion is not really needed, it is added here to be explicitly
       --  reason about the initialization of the output.
@@ -420,50 +413,47 @@ package body Saatana.Crypto.Phelix is
    --  Process_AAD
    --
    procedure Process_AAD (This : in out Context;
-                          Aad  : in     Plaintext_Stream)
-   is
-      pragma Assume (Aad'First in Stream_Index);
-      --  FIXME: This should be implicit due to the type definition and thus
-      --         easy to prove, but without this assumption SPARK comes up with
-      --         a "range check might fail" below with the impossible:
-      --  [Counterexample] Aad'First = -4611686018427387905 and
-      --                   Aad'Last = -4611686018427387906
-      --  First of all Stream_Index is not negative and secondly its range is
-      --  significanter smaller than Stream_Offset.
-
-      Aad_Len : Stream_Count := Aad'Length;
-      Src_Idx : Stream_Offset := Aad'First;
+                          Aad  : in     Plaintext_Stream) is
    begin
       This.CS.AAD_Len := This.CS.AAD_Len + Aad'Length;
 
-      while Aad_Len > 0 loop
-         Process_AAD_Word :
+      if Aad'Length = 0 then
+         null;
+      else
          declare
-            Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Aad_Len, 4);
-            J               : constant Mod_8 := Mod_8 (This.CS.I mod 8);
+            Aad_Len : Stream_Count := Aad'Length;
+            Src_Idx : Stream_Offset := Aad'First;
          begin
-            Aad_Len := Aad_Len - Remaining_Bytes;
+            while Aad_Len > 0 loop
+               Process_AAD_Word :
+               declare
+                  Remaining_Bytes : constant Stream_Count := Stream_Count'Min (Aad_Len, 4);
+                  J               : constant Mod_8 := Mod_8 (This.CS.I mod 8);
+               begin
+                  Aad_Len := Aad_Len - Remaining_Bytes;
 
-            H (Z              => This.CS.Z,
-               Plaintext_Word => 0,
-               Key_Word       => This.KS.X_0 (J));
+                  H (Z              => This.CS.Z,
+                     Plaintext_Word => 0,
+                     Key_Word       => This.KS.X_0 (J));
 
-            H (Z              => This.CS.Z,
-               Plaintext_Word => To_Unsigned (Aad (Src_Idx .. Src_Idx + Remaining_Bytes - 1)),
-               Key_Word       => This.KS.X_1 (J) + This.CS.I);
+                  H (Z              => This.CS.Z,
+                     Plaintext_Word => To_Unsigned (Aad (Src_Idx .. Src_Idx + Remaining_Bytes - 1)),
+                     Key_Word       => This.KS.X_1 (J) + This.CS.I);
 
-            This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); --  Save the "old" value
+                  This.CS.Old_Z (Old_State_Words (This.CS.I mod 4)) := This.CS.Z (OLD_Z_REG); --  Save the "old" value
 
-            This.CS.I := This.CS.I + 1;
-            Src_Idx := Src_Idx + Remaining_Bytes;
-         end Process_AAD_Word;
+                  This.CS.I := This.CS.I + 1;
+                  Src_Idx := Src_Idx + Remaining_Bytes;
+               end Process_AAD_Word;
 
-         pragma Loop_Variant (Decreases => Aad_Len,
-                              Increases => Src_Idx,
-                              Increases => This.CS.I);
-         pragma Loop_Invariant (Src_Idx + Aad_Len - 1 = Aad'Last and then
-                                Src_Idx >= Aad'First);
-      end loop;
+               pragma Loop_Variant (Decreases => Aad_Len,
+                                    Increases => Src_Idx,
+                                    Increases => This.CS.I);
+               pragma Loop_Invariant (Src_Idx + Aad_Len - 1 = Aad'Last and then
+                                      Src_Idx >= Aad'First);
+            end loop;
+         end;
+      end if;
    end Process_AAD;
 
    --
