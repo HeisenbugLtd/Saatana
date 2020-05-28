@@ -83,8 +83,15 @@ package body Saatana.Crypto.Phelix is
                             Destination :    out Plaintext_Stream)
    is
       pragma Assume (Source'First in Stream_Index);
-      pragma Assume (Destination'First in Stream_Index); --  FIXME: This should be implicit due to the type definition and thus
-                                                         --         easy to prove.
+      pragma Assume (Destination'First in Stream_Index);
+      --  FIXME: These should be implicit due to the type definition and thus
+      --         easy to prove, but without these assumptions SPARK comes up
+      --         with a "range check might fail" below with the impossible:
+      --  [Counterexample] Source'First = -4611686018427387905 and ...
+      --                   Source'Last = -4611686018427387906
+      --  [Counterexample] Destination'First = -4611686018427387905
+      --  First of all Stream_Index is not negative and secondly its range is
+      --  significanter smaller than Stream_Offset.
       J          : Mod_8;
       The_Key    : Word_32;
       Plain_Text : Word_32;
@@ -146,6 +153,12 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
                                   Destination (I)'Initialized);
       end loop;
+
+      --  This assertion is not really needed, it is added here to be explicitly
+      --  reason about the initialization of the output.
+      --  And even in case it fails to prove, it may still speed up proof in
+      --  dependent parts by at least satisfying the post condition.
+      pragma Assert (Destination'Initialized);
    end Decrypt_Bytes;
 
    --
@@ -170,6 +183,12 @@ package body Saatana.Crypto.Phelix is
 
       Finalize (This => This,
                 Mac  => Mac);
+
+      --  This assertion is not really needed, it is added here to be explicitly
+      --  reason about the initialization of the output.
+      --  And even in case it fails to prove, it may still speed up proof in
+      --  dependent parts by at least satisfying the post condition.
+      pragma Assert (Packet'Initialized);
    end Decrypt_Packet;
 
    --
@@ -180,7 +199,15 @@ package body Saatana.Crypto.Phelix is
                             Destination :    out Ciphertext_Stream)
    is
       pragma Assume (Source'First in Stream_Index);
-      pragma Assume (Destination'First in Stream_Index); --  FIXME: Implicit by type definition.
+      pragma Assume (Destination'First in Stream_Index);
+      --  FIXME: These should be implicit due to the type definition and thus
+      --         easy to prove, but without these assumptions SPARK comes up
+      --         with a "range check might fail" below with the impossible:
+      --  [Counterexample] Source'First = -4611686018427387905 and ...
+      --                   Source'Last = -4611686018427387906
+      --  [Counterexample] Destination'First = -4611686018427387905
+      --  First of all Stream_Index is not negative and secondly its range is
+      --  significanter smaller than Stream_Offset.
 
       J           : Mod_8;
       The_Key     : Word_32;
@@ -234,6 +261,12 @@ package body Saatana.Crypto.Phelix is
          pragma Loop_Invariant (for all I in Destination'First .. Dst_Nxt - 1 =>
                                   Destination (I)'Initialized);
       end loop;
+
+      --  This assertion is not really needed, it is added here to be explicitly
+      --  reason about the initialization of the output.
+      --  And even in case it fails to prove, it may still speed up proof in
+      --  dependent parts by at least satisfying the post condition.
+      pragma Assert (Destination'Initialized);
    end Encrypt_Bytes;
 
    --
@@ -258,6 +291,12 @@ package body Saatana.Crypto.Phelix is
 
       Finalize (This => This,
                 Mac  => Mac);
+
+      --  This assertion is not really needed, it is added here to be explicitly
+      --  reason about the initialization of the output.
+      --  And even in case it fails to prove, it may still speed up proof in
+      --  dependent parts by at least satisfying the post condition.
+      pragma Assert (Packet'Initialized);
    end Encrypt_Packet;
 
    --
@@ -383,7 +422,14 @@ package body Saatana.Crypto.Phelix is
    procedure Process_AAD (This : in out Context;
                           Aad  : in     Plaintext_Stream)
    is
-      pragma Assume (Aad'First in Stream_Index); --  FIXME: Implicit by type definition.
+      pragma Assume (Aad'First in Stream_Index);
+      --  FIXME: This should be implicit due to the type definition and thus
+      --         easy to prove, but without this assumption SPARK comes up with
+      --         a "range check might fail" below with the impossible:
+      --  [Counterexample] Aad'First = -4611686018427387905 and
+      --                   Aad'Last = -4611686018427387906
+      --  First of all Stream_Index is not negative and secondly its range is
+      --  significanter smaller than Stream_Offset.
 
       Aad_Len : Stream_Count := Aad'Length;
       Src_Idx : Stream_Offset := Aad'First;
