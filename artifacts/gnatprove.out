@@ -1,4 +1,4 @@
-date               : 2020-05-28 12:48:05
+date               : 2020-05-29 00:49:05
 gnatprove version  : SPARK Community 2020 (20200429)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -U -P saatana.gpr
@@ -15,14 +15,14 @@ Data Dependencies                20          20          .                      
 Flow Dependencies                14          14          .                                    .           .          .
 Initialization                   18          18          .                                    .           .          .
 Non-Aliasing                      .           .          .                                    .           .          .
-Run-time Checks                 217           .          .    217 (CVC4 0%, Trivial 6%, Z3 94%)           .          .
-Assertions                       24           .          .                              24 (Z3)           .          .
+Run-time Checks                 219           .          .    219 (CVC4 0%, Trivial 6%, Z3 94%)           .          .
+Assertions                       28           .          .              28 (Trivial 7%, Z3 93%)           .          .
 Functional Contracts             35           .          .             35 (Trivial 11%, Z3 89%)           .          .
 LSP Verification                  .           .          .                                    .           .          .
 Termination                       4           .          .                               4 (Z3)           .          .
 Concurrency                       .           .          .                                    .           .          .
 ----------------------------------------------------------------------------------------------------------------------
-Total                           332    52 (16%)          .                            280 (84%)           .          .
+Total                           338    52 (15%)          .                            286 (85%)           .          .
 
 
 max steps used for successful proof: 14009
@@ -80,7 +80,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Mac_Size fully establish
   Saatana.Crypto.Phelix.Ctx_Msg_Len at saatana-crypto-phelix.ads:82 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Ctx_Msg_Len fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Msg_Len fully established
-  Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:279 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (37 checks)
+  Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:279 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (39 checks)
 the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -99,7 +99,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Saatana.Crypto.Phelix.Decrypt_Packet at saatana-crypto-phelix.ads:144 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (13 checks)
+  Saatana.Crypto.Phelix.Decrypt_Packet at saatana-crypto-phelix.ads:144 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (14 checks)
 the postcondition of Saatana.Crypto.Phelix.Decrypt_Packet depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -118,7 +118,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Packet depends on
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Saatana.Crypto.Phelix.Encrypt_Bytes at saatana-crypto-phelix.ads:249 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (36 checks)
+  Saatana.Crypto.Phelix.Encrypt_Bytes at saatana-crypto-phelix.ads:249 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (38 checks)
 the postcondition of Saatana.Crypto.Phelix.Encrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -137,7 +137,7 @@ absence of run-time errors of Saatana.Crypto.Phelix.Encrypt_Bytes depends on
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Right
-  Saatana.Crypto.Phelix.Encrypt_Packet at saatana-crypto-phelix.ads:103 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (14 checks)
+  Saatana.Crypto.Phelix.Encrypt_Packet at saatana-crypto-phelix.ads:103 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (15 checks)
 the postcondition of Saatana.Crypto.Phelix.Encrypt_Packet depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
