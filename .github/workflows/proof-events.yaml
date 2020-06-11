@@ -6,7 +6,7 @@ on:
     types: [labeled]
 
 jobs:
-  if: contains (github.event.issue.label.name, 'run_proof')
+  if: contains(github.event.label.name, 'run_proof')
   build:
     name: Proof on ${{ matrix.tag }} ${{ matrix.year }}
     runs-on: ubuntu-latest
