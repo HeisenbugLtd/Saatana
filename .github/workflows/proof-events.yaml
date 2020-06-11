@@ -17,13 +17,14 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             github.issues.removeLabel ({
-              context.repo.owner,
-              context.repo,
-              context.issue.number,
-              'run_proof'});
+              owner        : context.repo.owner,
+              repo         : context.repo.repo,
+              issue_number : context.issue.number,
+              name         : 'run_proof'
+            });
 
   build:
-    if: contains(github.event.label.name, 'run_proof')
+    if: never() # contains(github.event.label.name, 'run_proof')
     name: Proof on ${{ matrix.tag }} ${{ matrix.year }}
     runs-on: ubuntu-latest
 
