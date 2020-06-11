@@ -1,0 +1,63 @@
+# Triggers a proof run if an issue gets labeled with the specific run_proof label.
+name: "Proof Trigger"
+
+on:
+  issue_comment:
+    types: [labeled]
+
+jobs:
+  if: contains (github.event.label, 'run_proof')
+  build:
+    name: Proof on ${{ matrix.tag }} ${{ matrix.year }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        tag:
+          - community
+          # SPARK is only available on community installation
+        year:
+          - 2020
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Install toolchain
+        uses: ada-actions/toolchain@ce2020
+        with:
+          distrib: ${{ matrix.tag }}
+          target: native
+          community_year: ${{ matrix.year }}
+      - name: Build
+        run: >
+          bash .github/scripts/ci-build.sh
+      - name: Proof
+        run: >
+          bash .github/scripts/ci-proof.sh
+      - name: Commit and push prove logs to artifacts
+        run: |
+          cat _build/gnatprove/gnatprove.out > artifacts/gnatprove.out
+          git config --local user.email "gh+saatana@heisenbug.eu"
+          git config --local user.name "Auto Committer"
+          git pull
+          git commit artifacts/gnatprove.out -m "* (Autocommit) Prove results."
+          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+      - name: Upload gnatprove stdout
+        uses: actions/upload-artifact@master
+        with:
+          name: gnatprove-${{ matrix.tag }}.stdout
+          path: gnatprove.stdout
+      - name: TARing gnatprove output
+        run: |
+          tar --ignore-failed-read`(for i in "*.ali" "*.cswi" "*.stderr" "*.stdout"; do printf " --exclude=${i}"; done)` -vcf gnatprove-output.tar _build/gnatprove
+      - name: Upload TAR archive of gnatprove output
+        uses: actions/upload-artifact@master
+        with:
+          name: gnatprove-${{ matrix.tag }}-output.tar
+          path: gnatprove-output.tar
+      - name: Run tests
+        run: |
+          bash .github/scripts/ci-test.sh
+      - name: Commit and push test results to artifacts
+        run: |
+          .github/scripts/update_test_results.sh "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
