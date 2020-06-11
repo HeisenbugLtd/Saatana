@@ -24,7 +24,7 @@ jobs:
             });
 
   build:
-    if: never() # contains(github.event.label.name, 'run_proof')
+    if: False # contains(github.event.label.name, 'run_proof')
     name: Proof on ${{ matrix.tag }} ${{ matrix.year }}
     runs-on: ubuntu-latest
 
