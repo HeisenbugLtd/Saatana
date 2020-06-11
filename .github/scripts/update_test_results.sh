@@ -21,6 +21,7 @@ do
 done;
 git config --local user.email "gh+saatana@heisenbug.eu"
 git config --local user.name "Auto Committer"
+git pull
 git add artifacts
 git commit -m "* (Autocommit) Test results."
 git push "${1}"
