@@ -2,11 +2,11 @@
 name: "Proof Trigger"
 
 on:
-  issue_comment:
+  issues:
     types: [labeled]
 
 jobs:
-  if: contains (github.event.label, 'run_proof')
+  if: contains (github.event.labels.*.name, 'run_proof')
   build:
     name: Proof on ${{ matrix.tag }} ${{ matrix.year }}
     runs-on: ubuntu-latest
