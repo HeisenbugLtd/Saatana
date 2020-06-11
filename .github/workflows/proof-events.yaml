@@ -6,6 +6,22 @@ on:
     types: [labeled]
 
 jobs:
+  remove_label:
+    if: contains(github.event.label.name, 'run_proof')
+    name: Remove Label
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/github-script@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.removeLabel ({
+              context.repo.owner,
+              context.repo,
+              context.issue.number,
+              'run_proof'});
+
   build:
     if: contains(github.event.label.name, 'run_proof')
     name: Proof on ${{ matrix.tag }} ${{ matrix.year }}
