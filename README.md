@@ -5,6 +5,7 @@ A cryptographic framework, proven for correctness in SPARK
 
 [![](https://github.com/HeisenbugLtd/Saatana/workflows/Build%20Linux/badge.svg)](https://github.com/HeisenbugLtd/Saatana/actions?query=workflow%3A"Build+Linux")
 [![](https://github.com/HeisenbugLtd/Saatana/workflows/Proof%20Linux/badge.svg)](https://github.com/HeisenbugLtd/Saatana/actions?query=workflow%3A"Proof+Linux")
+[![Alire](https://img.shields.io/endpoint?url=https://alire.ada.dev/badges/saatana.json)](https://alire.ada.dev/crates/saatana.html)
 
 Requires GNAT Community 2020, as we are making use of SPARK's [Relaxed_Initialization](https://docs.adacore.com/spark2014-docs/html/ug/en/source/specification_features.html#aspect-relaxed-initialization-and-attribute-initialized).
 
