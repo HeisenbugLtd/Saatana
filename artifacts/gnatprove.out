@@ -1,8 +1,12 @@
-date               : 2020-10-17 01:24:30
+date               : 2020-10-17 03:06:51
 gnatprove version  : SPARK Community 2020 (20200818)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -U -P saatana.gpr
-Switches attribute: --prover=z3,cvc4,altergo --mode=all --proof=progressive --steps=131072 -j0
+ Proof_Switches attribute:
+   test_phelix_api.adb: --prover=Z3 --steps=1 --timeout=3
+   saatana-crypto.adb: --prover=Z3 --steps=1 --timeout=3
+   saatana-crypto-phelix.adb: --prover=Z3,CVC4 --steps=3986 --timeout=3
+   saatana-crypto-lemmas.ads: --prover=Z3 --steps=1 --timeout=3
 
 
 Summary of SPARK analysis
@@ -17,7 +21,7 @@ Initialization                   18          18          .                      
 Non-Aliasing                      .           .          .                                    .           .          .
 Run-time Checks                 219           .          .    219 (CVC4 0%, Trivial 6%, Z3 94%)           .          .
 Assertions                       28           .          .              28 (Trivial 7%, Z3 93%)           .          .
-Functional Contracts             35           .          .             35 (Trivial 11%, Z3 89%)           .          .
+Functional Contracts             35           .          .    35 (CVC4 1%, Trivial 11%, Z3 88%)           .          .
 LSP Verification                  .           .          .                                    .           .          .
 Termination                       4           .          .                               4 (Z3)           .          .
 Concurrency                       .           .          .                                    .           .          .
@@ -25,7 +29,7 @@ Concurrency                       .           .          .                      
 Total                           338    52 (15%)          .                            286 (85%)           .          .
 
 
-max steps used for successful proof: 14009
+max steps used for successful proof: 3986
 
 Analyzed 5 units
 in unit saatana, 1 subprograms and packages out of 1 analyzed
