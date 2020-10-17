@@ -26,17 +26,11 @@ project Saatana is
    end Linker;
 
    package Prove is
-      Proof_Switches := ("--mode=all", "--proof=progressive", "--steps=131072", "-j0");
-      CVC4_First     := ("--prover=cvc4,z3,altergo") & Proof_Switches;
-      Z3_First       := ("--prover=z3,cvc4,altergo") & Proof_Switches;
-
-      --  Z3 seems significantly faster in proving certain VCs (see list below), so run it first.
-      for Switches use Z3_First;
-
-      --  Alas, gnatprove seemingly cannot handle per-file switches.
-      --  for Switches ("saatana-crypto-phelix.adb") use Z3_First;
-      --  for Switches ("saatana-crypto-phelix.ads") use Z3_First;
-      --  for Switches ("saatana-crypto-lemmas.ads") use Z3_First;
+      --  Optimized by SPAT(R)
+      for Proof_Switches ("saatana-crypto-lemmas.ads") use ("--prover=Z3", "--steps=1", "--timeout=3");
+      for Proof_Switches ("saatana-crypto-phelix.adb") use ("--prover=Z3,CVC4", "--steps=3986", "--timeout=3");
+      for Proof_Switches ("saatana-crypto.adb") use ("--prover=Z3", "--steps=1", "--timeout=3");
+      for Proof_Switches ("test_phelix_api.adb") use ("--prover=Z3", "--steps=1", "--timeout=3");
    end Prove;
 
    package Check is

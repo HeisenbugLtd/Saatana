@@ -1,0 +1,25 @@
+# THIS IS A MACHINE-GENERATED FILE. DO NOT EDIT MANUALLY.
+
+[solution]
+[solution.context]
+solved = true
+[[solution.state]]
+crate = "gnat"
+fulfilment = "solved"
+pinned = false
+transitivity = "direct"
+versions = "^2020"
+[solution.state.release]
+description = "GNAT is a compiler for the Ada programming language"
+maintainers = [
+"alejandro@mosteo.com",
+]
+maintainers-logins = [
+"mosteo",
+]
+name = "gnat"
+notes = "Detected at /opt/GNAT/2020/bin/gnat"
+version = "2020.0.0"
+[solution.state.release.origin]
+url = "external:path /opt/GNAT/2020/bin/gnat"
+
