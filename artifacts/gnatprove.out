@@ -1,4 +1,4 @@
-date               : 2023-03-03 03:50:35
+date               : 2023-03-03 13:04:55
 gnatprove version  : SPARK Community 2020 (20200818)
 host               : Linux 64 bits
 command line       : gnatprove --assumptions --output-header -U -P saatana.gpr
@@ -21,12 +21,12 @@ Initialization                   18          18          .                      
 Non-Aliasing                      .           .          .                                    .           .          .
 Run-time Checks                 219           .          .    219 (CVC4 0%, Trivial 6%, Z3 94%)           .          .
 Assertions                       28           .          .              28 (Trivial 7%, Z3 93%)           .          .
-Functional Contracts             35           .          .    35 (CVC4 1%, Trivial 11%, Z3 88%)           .          .
+Functional Contracts             35           .          .    34 (CVC4 1%, Trivial 11%, Z3 88%)           .          1
 LSP Verification                  .           .          .                                    .           .          .
 Termination                       4           .          .                               4 (Z3)           .          .
 Concurrency                       .           .          .                                    .           .          .
 ----------------------------------------------------------------------------------------------------------------------
-Total                           338    52 (15%)          .                            286 (85%)           .          .
+Total                           338    52 (15%)          .                            285 (84%)           .     1 (0%)
 
 
 max steps used for successful proof: 3986
@@ -84,44 +84,34 @@ absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Mac_Size fully establish
   Saatana.Crypto.Phelix.Ctx_Msg_Len at saatana-crypto-phelix.ads:82 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (0 checks)
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Ctx_Msg_Len fully established
 absence of run-time errors of Saatana.Crypto.Phelix.Ctx_Msg_Len fully established
-  Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:279 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (39 checks)
-the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
-  effects on parameters and Global variables of Interfaces.Rotate_Left
-  effects on parameters and Global variables of Interfaces.Shift_Left
-  effects on parameters and Global variables of Interfaces.Shift_Right
-  absence of run-time errors of Interfaces.Rotate_Left
-  absence of run-time errors of Interfaces.Shift_Left
-  absence of run-time errors of Interfaces.Shift_Right
+  Saatana.Crypto.Phelix.Decrypt_Bytes at saatana-crypto-phelix.ads:279 flow analyzed (0 errors, 0 checks and 0 warnings) and not proved, 38 checks out of 39 proved
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
-absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Bytes depends on
-  effects on parameters and Global variables of Interfaces.Rotate_Left
-  effects on parameters and Global variables of Interfaces.Shift_Left
-  effects on parameters and Global variables of Interfaces.Shift_Right
-  absence of run-time errors of Interfaces.Rotate_Left
-  absence of run-time errors of Interfaces.Shift_Left
-  absence of run-time errors of Interfaces.Shift_Right
   Saatana.Crypto.Phelix.Decrypt_Packet at saatana-crypto-phelix.ads:144 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (14 checks)
 the postcondition of Saatana.Crypto.Phelix.Decrypt_Packet depends on
+  the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Right
+  absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Bytes
 effects on parameters and Global variables of Saatana.Crypto.Phelix.Decrypt_Packet depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
 absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Packet depends on
+  the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Right
+  absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Bytes
   Saatana.Crypto.Phelix.Encrypt_Bytes at saatana-crypto-phelix.ads:249 flow analyzed (0 errors, 0 checks and 0 warnings) and proved (38 checks)
 the postcondition of Saatana.Crypto.Phelix.Encrypt_Bytes depends on
   effects on parameters and Global variables of Interfaces.Rotate_Left
@@ -247,6 +237,7 @@ effects on parameters and Global variables of Test_Phelix_API depends on
   effects on parameters and Global variables of Interfaces.Shift_Left
   effects on parameters and Global variables of Interfaces.Shift_Right
 absence of run-time errors of Test_Phelix_API depends on
+  the postcondition of Saatana.Crypto.Phelix.Decrypt_Bytes
   effects on parameters and Global variables of Ada.Command_Line.Set_Exit_Status
   effects on parameters and Global variables of Interfaces.Rotate_Left
   effects on parameters and Global variables of Interfaces.Shift_Left
@@ -255,3 +246,4 @@ absence of run-time errors of Test_Phelix_API depends on
   absence of run-time errors of Interfaces.Rotate_Left
   absence of run-time errors of Interfaces.Shift_Left
   absence of run-time errors of Interfaces.Shift_Right
+  absence of run-time errors of Saatana.Crypto.Phelix.Decrypt_Bytes
